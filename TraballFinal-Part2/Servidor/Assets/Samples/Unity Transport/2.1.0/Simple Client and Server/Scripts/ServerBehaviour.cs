@@ -84,12 +84,6 @@ namespace Unity.Networking.Transport.Samples
 
                         nombresClientes.Add(nombreCliente.ToString());
 
-                        Debug.Log("CLIENTES CONECTADOS AL SERVIDOR");
-                        foreach (var cliente in nombresClientes)
-                        {
-                            Debug.Log(cliente);
-                        }
-
                         // Usar el pipeline creado al enviar datos
                         m_Driver.BeginSend(m_MyPipeline, m_Connections[i], out var writer);
                         writer.WriteByte(byteCodigoMensaje);
@@ -114,7 +108,6 @@ namespace Unity.Networking.Transport.Samples
                     }
                     else if (cmd == NetworkEvent.Type.Disconnect)
                     {
-                        Debug.Log("Client disconnected from the server.");
                         m_Connections[i] = default;
                         break;
                     }

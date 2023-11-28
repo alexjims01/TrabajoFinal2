@@ -1,6 +1,7 @@
 using UnityEngine;
 using Unity.Networking.Transport;
 using Unity.Collections;
+using System.Collections.Generic;
 
 namespace Unity.Networking.Transport.Samples
 {
@@ -12,7 +13,19 @@ namespace Unity.Networking.Transport.Samples
 
         private string conexion = "Peticion de conexion";
 
+        struct MensajeServidorCliente
+        {
+            public char CodigoMensaje;
+            public FixedString4096Bytes NombreServidor;
+            public FixedString4096Bytes NombresCliente;
+            public FixedString4096Bytes NombresClienteAnterior;
+            public float TiempoTranscurrido;
 
+            public override string ToString()
+            {
+                return $"Codigo Mensaje: {CodigoMensaje}\nNombre Servidor: {NombreServidor}\nNombre Cliente: {NombresCliente}\nNombre Cliente Anterior: {NombresClienteAnterior}\nTiempo de vida del servidor: {TiempoTranscurrido}";
+            }
+        }
         void Start()
         {
             m_Driver = NetworkDriver.Create();
@@ -44,7 +57,6 @@ namespace Unity.Networking.Transport.Samples
             {
                 if (cmd == NetworkEvent.Type.Connect)
                 {
-                    //Debug.Log("We are now connected to the server.");
 
                     // Usar el pipeline creado al enviar datos
                     m_Driver.BeginSend(m_MyPipeline, m_Connection, out var writer);
@@ -53,25 +65,21 @@ namespace Unity.Networking.Transport.Samples
                 }
                 else if (cmd == NetworkEvent.Type.Data)
                 {
-                    byte bytecodigoMensaje = stream.ReadByte();
-                    char charcodigoMensaje = (char)bytecodigoMensaje;
-                    FixedString32Bytes nombreServidor = stream.ReadFixedString32();
-                    FixedString4096Bytes nombreCliente = stream.ReadFixedString4096();
-                    FixedString4096Bytes nombreClienteAnterior = stream.ReadFixedString4096();
-                    float tiempoTranscurrido = stream.ReadFloat();
 
-                    Debug.Log($"Codigo mensaje -> {charcodigoMensaje}");
-                    Debug.Log($"Nombre Servidor -> {nombreServidor}");
-                    Debug.Log($"Nombre Cliente -> {nombreCliente}");
-                    Debug.Log($"Nombre Ciente Anterior -> {nombreClienteAnterior}");
-                    Debug.Log($"Tiempo encendido -> {tiempoTranscurrido} segundos");
+                    MensajeServidorCliente mensaje = new MensajeServidorCliente();
+                    mensaje.CodigoMensaje = (char)stream.ReadByte();
+                    mensaje.NombreServidor = stream.ReadFixedString32();
+                    mensaje.NombresCliente = stream.ReadFixedString4096();
+                    mensaje.NombresClienteAnterior = stream.ReadFixedString4096();
+                    mensaje.TiempoTranscurrido = stream.ReadFloat();
+
+                    Debug.Log(mensaje);
 
                     m_Connection.Disconnect(m_Driver);
                     m_Connection = default;
                 }
                 else if (cmd == NetworkEvent.Type.Disconnect)
                 {
-                    Debug.Log("Client got disconnected from server.");
                     m_Connection = default;
                 }
             }
