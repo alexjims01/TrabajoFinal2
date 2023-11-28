@@ -1,0 +1,29 @@
+# Unity specific
+Library/
+Temp/
+Logs/
+Builds/
+*.sln
+*.csproj
+*.userprefs
+*.orig
+
+# Visual Studio Code specific
+.vscode/
+
+# Windows generated files
+Thumbs.db
+Desktop.ini
+
+# macOS generated files
+.DS_Store
+
+# Linux generated files
+Icon?
+
+# Case-insensitive entries
+[Tt]emp/
+[Ll]ibrary/
+
+# Ignore project-specific settings
+ProjectSettings/EditorBuildSettings.asset
