@@ -1,6 +1,8 @@
 using UnityEngine;
 using Unity.Collections;
 using Unity.Networking.Transport;
+using System.Collections.Generic;
+using Codice.Client.Common.Encryption;
 
 namespace Unity.Networking.Transport.Samples
 {
@@ -10,6 +12,12 @@ namespace Unity.Networking.Transport.Samples
         NativeList<NetworkConnection> m_Connections;
         NetworkPipeline m_MyPipeline; // Nueva variable para almacenar el pipeline
 
+        private string nombreServidor = "Servidor Unity 1.0";
+        private string idCliente = "Cliente";
+        private float tiempoInicio;
+
+        private List<string> nombresClientes = new List<string>();
+
         void Start()
         {
             m_Driver = NetworkDriver.Create();
@@ -18,13 +26,15 @@ namespace Unity.Networking.Transport.Samples
             // Crear el pipeline con Fragmentation y ReliableSequenced
             m_MyPipeline = m_Driver.CreatePipeline(typeof(FragmentationPipelineStage), typeof(ReliableSequencedPipelineStage));
 
-            var endpoint = NetworkEndpoint.AnyIpv4.WithPort(80);
+            var endpoint = NetworkEndpoint.AnyIpv4.WithPort(8080);
             if (m_Driver.Bind(endpoint) != 0)
             {
-                Debug.LogError("Failed to bind to port 80.");
+                Debug.LogError("Failed to bind to port 8080.");
                 return;
             }
             m_Driver.Listen();
+
+            tiempoInicio = Time.time;
         }
 
         void OnDestroy()
@@ -55,7 +65,7 @@ namespace Unity.Networking.Transport.Samples
             while ((c = m_Driver.Accept()) != default)
             {
                 m_Connections.Add(c);
-                Debug.Log("Accepted a connection.");
+
             }
 
             for (int i = 0; i < m_Connections.Length; i++)
@@ -66,15 +76,41 @@ namespace Unity.Networking.Transport.Samples
                 {
                     if (cmd == NetworkEvent.Type.Data)
                     {
-                        uint number = stream.ReadUInt();
+                        char codigoMensaje = 'H';
+                        byte byteCodigoMensaje = (byte)codigoMensaje;
+                        int numeroAleatorio = Random.Range(100, 1000);
+                        FixedString4096Bytes nombreCliente = idCliente + numeroAleatorio.ToString();
+                        float tiempoTranscurrido = Time.time - tiempoInicio;
 
-                        Debug.Log($"Got {number} from a client, adding 2 to it.");
-                        number += 2;
+                        nombresClientes.Add(nombreCliente.ToString());
+
+                        Debug.Log("CLIENTES CONECTADOS AL SERVIDOR");
+                        foreach (var cliente in nombresClientes)
+                        {
+                            Debug.Log(cliente);
+                        }
 
                         // Usar el pipeline creado al enviar datos
                         m_Driver.BeginSend(m_MyPipeline, m_Connections[i], out var writer);
-                        writer.WriteUInt(number);
+                        writer.WriteByte(byteCodigoMensaje);
+                        writer.WriteFixedString32(nombreServidor);
+                        writer.WriteFixedString4096(nombreCliente);
+                        if(nombresClientes.Count > 1)
+                        {
+                            int indexClienteAnterior = nombresClientes.Count - 2;
+                            string nombreClienteAnterior = nombresClientes[indexClienteAnterior].ToString();
+                            writer.WriteFixedString4096(nombreClienteAnterior);
+                        }
+                        else
+                        {
+                            string nombreClienteAnterior = " ";
+                            writer.WriteFixedString4096(nombreClienteAnterior);
+                        }
+                        
+                        writer.WriteFloat(tiempoTranscurrido);
+
                         m_Driver.EndSend(writer);
+
                     }
                     else if (cmd == NetworkEvent.Type.Disconnect)
                     {
