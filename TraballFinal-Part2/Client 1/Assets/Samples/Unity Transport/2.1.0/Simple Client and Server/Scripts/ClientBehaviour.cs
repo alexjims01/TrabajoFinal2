@@ -33,7 +33,7 @@ namespace Unity.Networking.Transport.Samples
             // Crear el pipeline con Fragmentation y ReliableSequenced
             m_MyPipeline = m_Driver.CreatePipeline(typeof(FragmentationPipelineStage), typeof(ReliableSequencedPipelineStage));
 
-            var endpoint = NetworkEndpoint.Parse("192.168.56.1", 8080);
+            var endpoint = NetworkEndpoint.Parse("192.168.1.57", 8080);
             m_Connection = m_Driver.Connect(endpoint);
         }
 
