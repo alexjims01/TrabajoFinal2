@@ -27,6 +27,7 @@ namespace Unity.Networking.Transport.Samples
             m_MyPipeline = m_Driver.CreatePipeline(typeof(FragmentationPipelineStage), typeof(ReliableSequencedPipelineStage));
 
             var endpoint = NetworkEndpoint.AnyIpv4.WithPort(8080);
+
             if (m_Driver.Bind(endpoint) != 0)
             {
                 Debug.LogError("Failed to bind to port 8080.");
@@ -35,7 +36,26 @@ namespace Unity.Networking.Transport.Samples
             m_Driver.Listen();
 
             tiempoInicio = Time.time;
+
+            string serverIP = GetLocalIPAddress();
+            Debug.Log($"Server IP: {serverIP}");
+
         }
+
+        string GetLocalIPAddress()
+        {
+            string localIP = string.Empty;
+            foreach (System.Net.IPAddress ip in System.Net.Dns.GetHostAddresses(System.Net.Dns.GetHostName()))
+            {
+                if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                {
+                    localIP = ip.ToString();
+                    break;
+                }
+            }
+            return localIP;
+        }
+
 
         void OnDestroy()
         {
