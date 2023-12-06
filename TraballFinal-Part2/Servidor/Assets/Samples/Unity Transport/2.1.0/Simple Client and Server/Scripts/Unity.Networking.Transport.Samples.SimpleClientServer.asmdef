@@ -3,7 +3,8 @@
     "rootNamespace": "",
     "references": [
         "Unity.Collections",
-        "Unity.Networking.Transport"
+        "Unity.Networking.Transport",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

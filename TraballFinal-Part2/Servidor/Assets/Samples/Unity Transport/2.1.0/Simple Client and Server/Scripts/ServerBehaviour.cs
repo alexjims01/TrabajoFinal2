@@ -3,6 +3,7 @@ using Unity.Collections;
 using Unity.Networking.Transport;
 using System.Collections.Generic;
 using Codice.Client.Common.Encryption;
+using TMPro;
 
 namespace Unity.Networking.Transport.Samples
 {
@@ -17,6 +18,8 @@ namespace Unity.Networking.Transport.Samples
         private float tiempoInicio;
 
         private List<string> nombresClientes = new List<string>();
+
+        [SerializeField] TextMeshProUGUI textoMeshPro;
 
         void Start()
         {
@@ -39,6 +42,8 @@ namespace Unity.Networking.Transport.Samples
 
             string serverIP = GetLocalIPAddress();
             Debug.Log($"Server IP: {serverIP}");
+
+            textoMeshPro.text = serverIP;
 
         }
 
@@ -84,6 +89,7 @@ namespace Unity.Networking.Transport.Samples
             NetworkConnection c;
             while ((c = m_Driver.Accept()) != default)
             {
+                Debug.Log("Cliente conectado");
                 m_Connections.Add(c);
 
             }
@@ -128,6 +134,7 @@ namespace Unity.Networking.Transport.Samples
                     }
                     else if (cmd == NetworkEvent.Type.Disconnect)
                     {
+                        Debug.Log("Client disconnected");
                         m_Connections[i] = default;
                         break;
                     }
