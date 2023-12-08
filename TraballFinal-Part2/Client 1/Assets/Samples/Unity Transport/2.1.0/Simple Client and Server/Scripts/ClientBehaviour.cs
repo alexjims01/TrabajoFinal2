@@ -7,8 +7,10 @@ using UnityEngine.UI;
 using System;
 using UnityEngine.SceneManagement;
 using UnityEditor.PackageManager;
-using Codice.Client.Common.GameUI;
+using Codice;
 using UnityEditor;
+using System.IO;
+using UnityEditor.VersionControl;
 
 public class ClientBehaviour : MonoBehaviour
 {
@@ -16,7 +18,7 @@ public class ClientBehaviour : MonoBehaviour
     NetworkConnection m_Connection;
     NetworkPipeline m_MyPipeline; // Nueva variable para almacenar el pipeline
 
-    private string conexion = "Peticion de conexion";
+    //private string conexion = "Peticion de conexion";
 
     [SerializeField] TMP_InputField IPField;
     private string IPaddr;
@@ -25,6 +27,8 @@ public class ClientBehaviour : MonoBehaviour
     private string serverPort;
 
     [SerializeField] Button boton;
+
+    private FixedString4096Bytes IdCliente;
 
     public static ClientBehaviour Instance { get; private set; }
 
@@ -41,6 +45,13 @@ public class ClientBehaviour : MonoBehaviour
         {
             return $"Codigo Mensaje: {CodigoMensaje}\nNombre Servidor: {NombreServidor}\nNombre Cliente: {NombresCliente}\nNombre Cliente Anterior: {NombresClienteAnterior}\nTiempo de vida del servidor: {TiempoTranscurrido}";
         }
+    }
+
+    struct MensajeClienteServidor
+    {
+        public char CodigoMensaje;
+        public FixedString4096Bytes NombresCliente;
+        public FixedString4096Bytes Personaje;
     }
 
     private void Awake()
@@ -70,6 +81,8 @@ public class ClientBehaviour : MonoBehaviour
             PortField.onValueChanged.AddListener(ActualizarPuerto);
             boton.onClick.AddListener(ConnectToServer);
         }
+
+        SharedData.Instance.CharacterSelected += CallCharacterSelected;
     }
 
     void ActualizarDireccionIP(string nuevaDireccion)
@@ -86,6 +99,10 @@ public class ClientBehaviour : MonoBehaviour
 
     void OnDestroy()
     {
+        if (SharedData.Instance != null)
+        {
+        }
+
         m_Driver.Dispose();
     }
 
@@ -107,21 +124,45 @@ public class ClientBehaviour : MonoBehaviour
             {
                 // Usar el pipeline creado al enviar datos
                 m_Driver.BeginSend(m_MyPipeline, m_Connection, out var writer);
-                writer.WriteFixedString32(conexion);
+                MensajeClienteServidor PIC = new MensajeClienteServidor();
+                PIC.CodigoMensaje = 'X';
+                writer.WriteByte((byte)PIC.CodigoMensaje);
                 m_Driver.EndSend(writer);
             }
             else if (cmd == NetworkEvent.Type.Data)
             {
+                char codigoMensaje = (char)stream.ReadByte();
+                if(codigoMensaje == 'E')
+                {
+                    string idUsuario = stream.ReadFixedString4096().ToString();
+                    string mensaje = stream.ReadFixedString4096().ToString();
 
-                MensajeServidorCliente mensaje = new MensajeServidorCliente();
-                mensaje.CodigoMensaje =(char)stream.ReadByte();
-                mensaje.NombreServidor = stream.ReadFixedString32();
-                mensaje.NombresCliente = stream.ReadFixedString4096();
-                mensaje.NombresClienteAnterior = stream.ReadFixedString4096();
-                mensaje.TiempoTranscurrido = stream.ReadFloat();
+                    Debug.Log(mensaje);
+                }
+                else if(codigoMensaje == 'P')
+                {
+                    // Recibir la lista de personajes disponibles
+                    int cantidadPersonajes = stream.ReadInt();
 
-                //Debug.Log(mensaje);
+                    Debug.Log("Personajes disponibles:");
+                    for (int i = 0; i < cantidadPersonajes; i++)
+                    {
+                        string personajeDisponible = stream.ReadFixedString4096().ToString();
+                        Debug.Log(personajeDisponible);
+                    }
+                }
+                else
+                {
+                    MensajeServidorCliente mensaje = new MensajeServidorCliente();
+                    mensaje.CodigoMensaje = codigoMensaje;
+                    mensaje.NombreServidor = stream.ReadFixedString32();
+                    mensaje.NombresCliente = stream.ReadFixedString4096();
+                    mensaje.NombresClienteAnterior = stream.ReadFixedString4096();
+                    mensaje.TiempoTranscurrido = stream.ReadFloat();
 
+                    IdCliente = mensaje.NombresCliente;
+                }
+                
             }
             else if (cmd == NetworkEvent.Type.Disconnect)
             {
@@ -176,6 +217,38 @@ public class ClientBehaviour : MonoBehaviour
         // Cargar la nueva escena
         SceneManager.LoadScene(nuevaEscena);
 
+    }
+
+    private void CallCharacterSelected(string selectedCharacterName)
+    {
+        // Aquí puedes manejar el nombre del personaje seleccionado
+        //Debug.Log($"Personaje seleccionado -> {selectedCharacterName}");
+
+        MensajeClienteServidor SeleccionPersonaje = new MensajeClienteServidor();
+        SeleccionPersonaje.CodigoMensaje = 'C';
+        SeleccionPersonaje.Personaje = selectedCharacterName;
+        SeleccionPersonaje.NombresCliente = IdCliente;
+
+        EnviarMensajeAlServidor(SeleccionPersonaje);
+
+    }
+
+    private void EnviarMensajeAlServidor(MensajeClienteServidor mensaje)
+    {
+        if (m_Connection.IsCreated)
+        {
+            // Crear un escritor para el mensaje
+            var writer = m_Driver.BeginSend(m_MyPipeline, m_Connection, out var tempWriter);
+
+            // Escribir los datos del mensaje en el escritor
+            tempWriter.WriteByte((byte)mensaje.CodigoMensaje);
+            tempWriter.WriteFixedString4096(mensaje.NombresCliente);
+            tempWriter.WriteFixedString4096(mensaje.Personaje);
+
+            // Finalizar el envío
+            m_Driver.EndSend(tempWriter);
+
+        }
     }
 }
 
