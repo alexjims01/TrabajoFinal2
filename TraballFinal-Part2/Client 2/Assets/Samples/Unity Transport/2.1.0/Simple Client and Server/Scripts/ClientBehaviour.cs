@@ -75,7 +75,7 @@ public class ClientBehaviour : MonoBehaviour
         // Crear el pipeline con Fragmentation y ReliableSequenced
         m_MyPipeline = m_Driver.CreatePipeline(typeof(FragmentationPipelineStage), typeof(ReliableSequencedPipelineStage));
 
-        if (IPField != null && PortField != null && boton != null)
+        if(IPField != null && PortField != null && boton != null)
         {
             IPField.onValueChanged.AddListener(ActualizarDireccionIP);
             PortField.onValueChanged.AddListener(ActualizarPuerto);
@@ -87,7 +87,7 @@ public class ClientBehaviour : MonoBehaviour
 
     void ActualizarDireccionIP(string nuevaDireccion)
     {
-        // Guardar la dirección IP ingresada
+        // Guardar la direcciï¿½n IP ingresada
         IPaddr = nuevaDireccion;
     }
 
@@ -132,14 +132,14 @@ public class ClientBehaviour : MonoBehaviour
             else if (cmd == NetworkEvent.Type.Data)
             {
                 char codigoMensaje = (char)stream.ReadByte();
-                if (codigoMensaje == 'E')
+                if(codigoMensaje == 'E')
                 {
                     string idUsuario = stream.ReadFixedString4096().ToString();
                     string mensaje = stream.ReadFixedString4096().ToString();
 
                     Debug.Log(mensaje);
                 }
-                else if (codigoMensaje == 'P')
+                else if(codigoMensaje == 'P')
                 {
                     // Recibir la lista de personajes disponibles
                     int cantidadPersonajes = stream.ReadInt();
@@ -149,6 +149,20 @@ public class ClientBehaviour : MonoBehaviour
                     {
                         string personajeDisponible = stream.ReadFixedString4096().ToString();
                         Debug.Log(personajeDisponible);
+                    }
+                }
+                else if(codigoMensaje == 'S')
+                {
+                    string idUsuario = stream.ReadFixedString4096().ToString();
+                    string mensaje = stream.ReadFixedString4096().ToString();
+
+                    if(mensaje == "Hero Knight")
+                    {
+                        LoadGame(1);
+                    }
+                    else if(mensaje == "Martial Hero")
+                    {
+                        LoadGame(2);
                     }
                 }
                 else
@@ -162,7 +176,7 @@ public class ClientBehaviour : MonoBehaviour
 
                     IdCliente = mensaje.NombresCliente;
                 }
-
+                
             }
             else if (cmd == NetworkEvent.Type.Disconnect)
             {
@@ -213,7 +227,25 @@ public class ClientBehaviour : MonoBehaviour
     {
         // Puedes especificar el nombre de la nueva escena que deseas cargar
         string nuevaEscena = "CharacterSelection";
+        
+        // Cargar la nueva escena
+        SceneManager.LoadScene(nuevaEscena);
 
+    }
+
+    public void LoadGame(int scene)
+    {
+        string nuevaEscena = "Game_1";
+        // Puedes especificar el nombre de la nueva escena que deseas cargar
+        if(scene == 1)
+        {
+            nuevaEscena = "Game_2";
+        }
+        else
+        {
+            nuevaEscena = "Game_1";
+        }
+        
         // Cargar la nueva escena
         SceneManager.LoadScene(nuevaEscena);
 
@@ -221,7 +253,7 @@ public class ClientBehaviour : MonoBehaviour
 
     private void CallCharacterSelected(string selectedCharacterName)
     {
-        // Aquí puedes manejar el nombre del personaje seleccionado
+        // Aquï¿½ puedes manejar el nombre del personaje seleccionado
         //Debug.Log($"Personaje seleccionado -> {selectedCharacterName}");
 
         MensajeClienteServidor SeleccionPersonaje = new MensajeClienteServidor();
@@ -245,7 +277,7 @@ public class ClientBehaviour : MonoBehaviour
             tempWriter.WriteFixedString4096(mensaje.NombresCliente);
             tempWriter.WriteFixedString4096(mensaje.Personaje);
 
-            // Finalizar el envío
+            // Finalizar el envï¿½o
             m_Driver.EndSend(tempWriter);
 
         }

@@ -11,4 +11,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Samples/Unity Transport/2.1.0/Simple Client and Server/Scenes/CharacterSelection.unity
     guid: bfd8cf64b0919744a955e3355ffa21be
+  - enabled: 1
+    path: Assets/Samples/Unity Transport/2.1.0/Simple Client and Server/Scenes/Game_2.unity
+    guid: 2536ee2472a7e9f4690fec9c99dead6b
+  - enabled: 1
+    path: Assets/Samples/Unity Transport/2.1.0/Simple Client and Server/Scenes/Game_1.unity
+    guid: 324dd0a1d63fd4a4e93b8dfe00bc8306
   m_configObjects: {}

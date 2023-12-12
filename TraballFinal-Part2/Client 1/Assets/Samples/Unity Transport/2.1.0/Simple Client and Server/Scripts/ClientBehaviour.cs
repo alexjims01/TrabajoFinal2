@@ -87,7 +87,7 @@ public class ClientBehaviour : MonoBehaviour
 
     void ActualizarDireccionIP(string nuevaDireccion)
     {
-        // Guardar la dirección IP ingresada
+        // Guardar la direcciï¿½n IP ingresada
         IPaddr = nuevaDireccion;
     }
 
@@ -149,6 +149,20 @@ public class ClientBehaviour : MonoBehaviour
                     {
                         string personajeDisponible = stream.ReadFixedString4096().ToString();
                         Debug.Log(personajeDisponible);
+                    }
+                }
+                else if(codigoMensaje == 'S')
+                {
+                    string idUsuario = stream.ReadFixedString4096().ToString();
+                    string mensaje = stream.ReadFixedString4096().ToString();
+
+                    if(mensaje == "Hero Knight")
+                    {
+                        LoadGame(1);
+                    }
+                    else if(mensaje == "Martial Hero")
+                    {
+                        LoadGame(2);
                     }
                 }
                 else
@@ -219,9 +233,27 @@ public class ClientBehaviour : MonoBehaviour
 
     }
 
+    public void LoadGame(int scene)
+    {
+        string nuevaEscena = "Game_1";
+        // Puedes especificar el nombre de la nueva escena que deseas cargar
+        if(scene == 1)
+        {
+            nuevaEscena = "Game_2";
+        }
+        else
+        {
+            nuevaEscena = "Game_1";
+        }
+        
+        // Cargar la nueva escena
+        SceneManager.LoadScene(nuevaEscena);
+
+    }
+
     private void CallCharacterSelected(string selectedCharacterName)
     {
-        // Aquí puedes manejar el nombre del personaje seleccionado
+        // Aquï¿½ puedes manejar el nombre del personaje seleccionado
         //Debug.Log($"Personaje seleccionado -> {selectedCharacterName}");
 
         MensajeClienteServidor SeleccionPersonaje = new MensajeClienteServidor();
@@ -245,7 +277,7 @@ public class ClientBehaviour : MonoBehaviour
             tempWriter.WriteFixedString4096(mensaje.NombresCliente);
             tempWriter.WriteFixedString4096(mensaje.Personaje);
 
-            // Finalizar el envío
+            // Finalizar el envï¿½o
             m_Driver.EndSend(tempWriter);
 
         }

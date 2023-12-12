@@ -134,7 +134,7 @@ namespace Unity.Networking.Transport.Samples
                             if (personajesPorCliente.ContainsValue(nuevoPersonaje))
                             {
                                 // El personaje ya fue seleccionado por otro cliente, enviar mensaje de error.
-                                Debug.LogWarning($"{idUsuario} intentó seleccionar el personaje {nuevoPersonaje}, pero ya estaba ocupado.");
+                                Debug.LogWarning($"{idUsuario} intentï¿½ seleccionar el personaje {nuevoPersonaje}, pero ya estaba ocupado.");
                                 EnviarErrorAlCliente(idUsuario, "Este personaje ya ha sido seleccionado por otro jugador.");
                             }
                             else
@@ -144,16 +144,16 @@ namespace Unity.Networking.Transport.Samples
                                 {
                                     if (personajeAnterior == nuevoPersonaje)
                                     {
-                                        // El usuario seleccionó el mismo personaje, no es un error.
-                                        Debug.Log($"{idUsuario} intentó seleccionar el mismo personaje {nuevoPersonaje}.");
+                                        // El usuario seleccionï¿½ el mismo personaje, no es un error.
+                                        Debug.Log($"{idUsuario} intentï¿½ seleccionar el mismo personaje {nuevoPersonaje}.");
                                     }
                                     else
                                     {
-                                        // El usuario seleccionó un nuevo personaje, actualizar la información.
+                                        // El usuario seleccionï¿½ un nuevo personaje, actualizar la informaciï¿½n.
                                         Debug.Log($"{idUsuario} ha cambiado de personaje. Anterior: {personajeAnterior}, Nuevo: {nuevoPersonaje}");
                                         personajesPorCliente[idUsuario] = nuevoPersonaje;
 
-                                        // Añadir el personaje anterior a la lista de PersonajesDisponibles
+                                        // Aï¿½adir el personaje anterior a la lista de PersonajesDisponibles
                                         if (!string.IsNullOrEmpty(personajeAnterior))
                                         {
                                             PersonajesDisponibles.Add(personajeAnterior);
@@ -165,13 +165,13 @@ namespace Unity.Networking.Transport.Samples
                                         // Enviar la lista actualizada de personajes disponibles a todos los clientes
                                         EnviarPersonajesDisponibles();
 
-                                        // Actualizar la información de los clientes conectados
+                                        // Actualizar la informaciï¿½n de los clientes conectados
                                         ClientesConectados();
                                     }
                                 }
                                 else
                                 {
-                                    // El usuario aún no ha seleccionado un personaje, realizar la selección.
+                                    // El usuario aï¿½n no ha seleccionado un personaje, realizar la selecciï¿½n.
                                     Debug.Log($"{idUsuario} ha elegido el personaje {nuevoPersonaje} correctamente");
                                     personajesPorCliente[idUsuario] = nuevoPersonaje;
 
@@ -181,12 +181,13 @@ namespace Unity.Networking.Transport.Samples
                                     // Enviar la lista actualizada de personajes disponibles a todos los clientes
                                     EnviarPersonajesDisponibles();
 
-                                    // Actualizar la información de los clientes conectados
+                                    // Actualizar la informaciï¿½n de los clientes conectados
                                     ClientesConectados();
 
-                                    // Añadir la conexión a la lista de conexiones por ID de usuario
+                                    // Aï¿½adir la conexiï¿½n a la lista de conexiones por ID de usuario
                                     conexionesPorId[idUsuario] = m_Connections[i];
                                 }
+                                EnviarPersonajeAceptado(idUsuario, nuevoPersonaje);
                             }
                         }
 
@@ -235,10 +236,10 @@ namespace Unity.Networking.Transport.Samples
                         // Obtener el ID del cliente desconectado
                         string idClienteDesconectado = ObtenerIdClienteDesconectado(m_Connections[i]);
 
-                        // Verificar si el cliente desconectado tenía un personaje elegido
+                        // Verificar si el cliente desconectado tenï¿½a un personaje elegido
                         if (personajesPorCliente.TryGetValue(idClienteDesconectado, out string personajeDesconectado))
                         {
-                            // Añadir el personaje nuevamente a la lista de PersonajesDisponibles
+                            // Aï¿½adir el personaje nuevamente a la lista de PersonajesDisponibles
                             if (!string.IsNullOrEmpty(personajeDesconectado))
                             {
                                 PersonajesDisponibles.Add(personajeDesconectado);
@@ -250,7 +251,7 @@ namespace Unity.Networking.Transport.Samples
                         personajesPorCliente.Remove(idClienteDesconectado);
                         conexionesPorId.Remove(idClienteDesconectado);
 
-                        // Establecer la conexión como default después de realizar las operaciones
+                        // Establecer la conexiï¿½n como default despuï¿½s de realizar las operaciones
                         m_Connections[i] = default;
 
                         // Actualizar la lista de clientes conectados
@@ -259,7 +260,7 @@ namespace Unity.Networking.Transport.Samples
                             EnviarPersonajesDisponibles();
                         }
 
-                        // Salir del bucle para evitar iterar sobre una colección modificada
+                        // Salir del bucle para evitar iterar sobre una colecciï¿½n modificada
                         break;
                     }
                 }
@@ -274,7 +275,7 @@ namespace Unity.Networking.Transport.Samples
             msg.NombresCliente = idUsuario;
             msg.Mensaje = mensaje;
 
-            // Obtener la conexión del cliente utilizando el diccionario
+            // Obtener la conexiï¿½n del cliente utilizando el diccionario
             if (conexionesPorId.TryGetValue(idUsuario, out var connection))
             {
                 // Enviar el mensaje de error al cliente
@@ -286,7 +287,31 @@ namespace Unity.Networking.Transport.Samples
             }
             else
             {
-                Debug.LogError($"No se pudo encontrar la conexión para el cliente con ID {idUsuario}");
+                Debug.LogError($"No se pudo encontrar la conexiï¿½n para el cliente con ID {idUsuario}");
+            }
+        }
+
+        void EnviarPersonajeAceptado(string idUsuario, string mensaje)
+        {
+            MensajeServidorCliente msg = new MensajeServidorCliente();
+
+            msg.CodigoMensaje = 'S';
+            msg.NombresCliente = idUsuario;
+            msg.Mensaje = mensaje;
+
+            // Obtener la conexiï¿½n del cliente utilizando el diccionario
+            if (conexionesPorId.TryGetValue(idUsuario, out var connection))
+            {
+                // Enviar el mensaje de error al cliente
+                m_Driver.BeginSend(m_MyPipeline, connection, out var writer);
+                writer.WriteByte((byte)msg.CodigoMensaje);
+                writer.WriteFixedString4096(msg.NombresCliente);
+                writer.WriteFixedString4096(msg.Mensaje);
+                m_Driver.EndSend(writer);
+            }
+            else
+            {
+                Debug.LogError($"No se pudo encontrar la conexiï¿½n para el cliente con ID {idUsuario}");
             }
         }
 
@@ -326,7 +351,7 @@ namespace Unity.Networking.Transport.Samples
             {
                 // Usar el pipeline creado al enviar datos
                 m_Driver.BeginSend(m_MyPipeline, connection, out var writer);
-                writer.WriteByte((byte)'P'); // Código de mensaje para la lista de personajes disponibles
+                writer.WriteByte((byte)'P'); // Cï¿½digo de mensaje para la lista de personajes disponibles
 
                 // Escribir la cantidad de personajes disponibles
                 writer.WriteInt(PersonajesDisponibles.Count);
