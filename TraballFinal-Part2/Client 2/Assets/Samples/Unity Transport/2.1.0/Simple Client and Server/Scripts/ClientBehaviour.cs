@@ -155,15 +155,8 @@ public class ClientBehaviour : MonoBehaviour
                 {
                     string idUsuario = stream.ReadFixedString4096().ToString();
                     string mensaje = stream.ReadFixedString4096().ToString();
-
-                    if(mensaje == "Hero Knight")
-                    {
-                        LoadGame(1);
-                    }
-                    else if(mensaje == "Martial Hero")
-                    {
-                        LoadGame(2);
-                    }
+                    
+                    LoadGame(mensaje);
                 }
                 else
                 {
@@ -233,21 +226,18 @@ public class ClientBehaviour : MonoBehaviour
 
     }
 
-    public void LoadGame(int scene)
+    public void LoadGame(string character)
     {
-        string nuevaEscena = "Game_1";
-        // Puedes especificar el nombre de la nueva escena que deseas cargar
-        if(scene == 1)
-        {
-            nuevaEscena = "Game_2";
-        }
-        else
-        {
-            nuevaEscena = "Game_1";
-        }
+        
+        string nuevaEscena = "Game";
+        PlayerPrefs.SetString("PersonajeSeleccionado", character);
+        SceneManager.LoadScene(nuevaEscena);
+        //SceneParameters sceneParameters = new SceneParameters();
+        //sceneParameters.Add("PersonajeSeleccionado", character);
+        //SceneManager.LoadScene(nuevaEscena, sceneParameters);
         
         // Cargar la nueva escena
-        SceneManager.LoadScene(nuevaEscena);
+        //SceneManager.LoadScene(nuevaEscena);
 
     }
 
