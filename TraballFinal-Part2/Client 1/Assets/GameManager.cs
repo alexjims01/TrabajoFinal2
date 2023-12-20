@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Globalization;
 
 public class GameManager : MonoBehaviour
 {
@@ -9,13 +10,27 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         string personajeSeleccionado = PlayerPrefs.GetString("PersonajeSeleccionado");
+        string posicionSpawnString = PlayerPrefs.GetString("PosicionSpawn");
+
+        Vector3 spawnPoint = Vector3.zero;
+        // Dividir la cadena en componentes (x, y, z) utilizando un carácter delimitador (por ejemplo, ',')
+        string[] componentes = posicionSpawnString.Replace("(", "").Replace(")", "").Split(',');
+
+        if (componentes.Length >= 3)
+        {
+            // Intentar convertir las cadenas a valores de punto flotante
+            float x = float.Parse(componentes[0], CultureInfo.InvariantCulture);
+            float y = float.Parse(componentes[1], CultureInfo.InvariantCulture);
+            float z = float.Parse(componentes[2], CultureInfo.InvariantCulture);
+            spawnPoint = new Vector3(x, y, z);
+        }
 
         GameObject prefab = FindPersonajePrefab(personajeSeleccionado);
-
+        Debug.Log(spawnPoint);
         // Instancia el personaje en la escena
         if (prefab != null)
         {
-            Instantiate(prefab, Vector3.zero, Quaternion.identity);
+            Instantiate(prefab, spawnPoint, Quaternion.identity);
         }
         else
         {
@@ -36,3 +51,4 @@ public class GameManager : MonoBehaviour
         return null;
     }
 }
+

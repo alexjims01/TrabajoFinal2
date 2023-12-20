@@ -4,7 +4,18 @@ using Unity.Networking.Transport;
 using System.Collections.Generic;
 using Codice.Client.Common.Encryption;
 using TMPro;
+using UnityEngine.SceneManagement;
 
+/*
+// CLAVES MENSAJES //
+    E -> Error
+    H
+    X
+    C -> Seleccion de personaje
+    S -> Personaje aceptado
+    P -> Lista Personajes Disponibles
+    R -> Posicion Spawn
+*/
 namespace Unity.Networking.Transport.Samples
 {
     public class ServerBehaviour : MonoBehaviour
@@ -30,6 +41,10 @@ namespace Unity.Networking.Transport.Samples
         [SerializeField] TextMeshProUGUI textoMeshPro;
         [SerializeField] TextMeshProUGUI ListaClientesConectados;
 
+        public Transform SpawnPoint_1;
+        public Transform SpawnPoint_2;
+
+        private List<Transform> SpawnPointDisponibles = new List<Transform>();
 
         struct MensajeServidorCliente
         {
@@ -42,6 +57,8 @@ namespace Unity.Networking.Transport.Samples
         {
             PersonajesDisponibles.Add("Martial Hero");
             PersonajesDisponibles.Add("Hero Knight");
+            SpawnPointDisponibles.Add(SpawnPoint_1);
+            SpawnPointDisponibles.Add(SpawnPoint_2);
 
             m_Driver = NetworkDriver.Create();
             m_Connections = new NativeList<NetworkConnection>(16, Allocator.Persistent);
@@ -188,6 +205,7 @@ namespace Unity.Networking.Transport.Samples
                                     conexionesPorId[idUsuario] = m_Connections[i];
                                 }
                                 EnviarPersonajeAceptado(idUsuario, nuevoPersonaje);
+                                EnviarPosicionSpawn(idUsuario,"spawn1");
                             }
                         }
 
@@ -264,7 +282,7 @@ namespace Unity.Networking.Transport.Samples
                         break;
                     }
                 }
-            }
+            }            
         }
 
         void EnviarErrorAlCliente(string idUsuario, string mensaje)
@@ -365,5 +383,40 @@ namespace Unity.Networking.Transport.Samples
                 m_Driver.EndSend(writer);
             }
         }
+
+        void EnviarPosicionSpawn(string idUsuario, string spawnpoint)
+        {
+            MensajeServidorCliente msg = new MensajeServidorCliente();
+
+            msg.CodigoMensaje = 'R';
+            msg.NombresCliente = idUsuario;
+            msg.Mensaje = "";
+            Transform Pos = SpawnPointDisponibles[0];
+
+            msg.Mensaje = Pos.position.ToString();
+            SpawnPointDisponibles.Remove(Pos);
+            // Obtener la conexi�n del cliente utilizando el diccionario
+            if (conexionesPorId.TryGetValue(idUsuario, out var connection))
+            {
+                // Enviar el mensaje de error al cliente
+                m_Driver.BeginSend(m_MyPipeline, connection, out var writer);
+                writer.WriteByte((byte)msg.CodigoMensaje);
+                writer.WriteFixedString4096(msg.NombresCliente);
+                writer.WriteFixedString4096(msg.Mensaje);
+                m_Driver.EndSend(writer);
+            }
+            else
+            {
+                Debug.LogError($"No se pudo encontrar la conexi�n para el cliente con ID {idUsuario}");
+            }
+
+            // Crear un mensaje que contenga la información relevante de la escena
+            //MensajeInformacionEscena mensaje = new MensajeInformacionEscena();
+            // Rellenar mensaje con datos de la escena
+
+            // Enviar el mensaje a todos los clientes
+            //EnviarMensajeATodosLosClientes(mensaje);
+        }
     }
+
 }
