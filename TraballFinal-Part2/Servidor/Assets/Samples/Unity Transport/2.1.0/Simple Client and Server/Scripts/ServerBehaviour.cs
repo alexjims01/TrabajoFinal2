@@ -68,8 +68,8 @@ namespace Unity.Networking.Transport.Samples
             public FixedString4096Bytes NombresCliente;
             public FixedString4096Bytes Personaje;
             public FixedString4096Bytes Spawn;
-            public FixedString4096Bytes PersonajesJugadores;
-            public FixedString4096Bytes PosicionJugadores;
+            //public FixedString4096Bytes PersonajesJugadores;
+            //public FixedString4096Bytes PosicionJugadores;
         }
         struct MensajeMovimientoClienteServidor
         {
@@ -432,11 +432,12 @@ namespace Unity.Networking.Transport.Samples
 
             Transform Pos = SpawnPointDisponibles[0];
             msg.Spawn = Pos.position.ToString();
-            msg.PersonajesJugadores = JugadoresJugando.ToString();
-            msg.PosicionJugadores = SpawnPointOcupados.ToString();
+            SpawnPointDisponibles.Remove(Pos);
+            //msg.PersonajesJugadores = JugadoresJugando.ToString();
+            //msg.PosicionJugadores = SpawnPointOcupados.ToString();
 
-            Debug.Log(JugadoresJugando);
-            Debug.Log(SpawnPointOcupados);
+            //Debug.Log(JugadoresJugando);
+            //Debug.Log(SpawnPointOcupados);
 
 
             // Obtener la conexi�n del cliente utilizando el diccionario
@@ -448,13 +449,18 @@ namespace Unity.Networking.Transport.Samples
                 writer.WriteFixedString4096(msg.NombresCliente);
                 writer.WriteFixedString4096(msg.Personaje);
                 writer.WriteFixedString4096(msg.Spawn);
-                writer.WriteFixedString4096(msg.PersonajesJugadores);
-                writer.WriteFixedString4096(msg.PosicionJugadores);
+                writer.WriteInt(JugadoresJugando.Count);
+                foreach (var jugador in JugadoresJugando)
+                {
+                    writer.WriteFixedString4096(jugador);
+                }
+                //writer.WriteFixedString4096(msg.PersonajesJugadores);
+                //writer.WriteFixedString4096(msg.PosicionJugadores);
 
                 m_Driver.EndSend(writer);
-                SpawnPointOcupados.Add(Pos);
-                SpawnPointDisponibles.Remove(Pos);
-                EnviarPosicionJugadores();
+                //SpawnPointOcupados.Add(Pos);
+                //
+                //EnviarPosicionJugadores();
 
             }
             else
