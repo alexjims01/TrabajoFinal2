@@ -15,12 +15,9 @@ using System;
     C -> Seleccion de personaje
     S -> Personaje aceptado + Posicion Spawn
     P -> Lista Personajes Disponibles
-<<<<<<< Updated upstream
     X -> Posicion Jugadores
-=======
     R -> Posicion Spawn
     M -> Movimiento/Accion del jugador
->>>>>>> Stashed changes
 */
 
 
@@ -46,7 +43,7 @@ namespace Unity.Networking.Transport.Samples
 
         private Dictionary<string, NetworkConnection> conexionesPorId = new Dictionary<string, NetworkConnection>();
 
-        
+
         [SerializeField] TextMeshProUGUI textoMeshPro;
         [SerializeField] TextMeshProUGUI ListaClientesConectados;
 
@@ -64,7 +61,7 @@ namespace Unity.Networking.Transport.Samples
             public FixedString4096Bytes Mensaje;
         }
 
-<<<<<<< Updated upstream
+
         struct MensajePersonajeSeleccionado
         {
             public char CodigoMensaje;
@@ -73,7 +70,7 @@ namespace Unity.Networking.Transport.Samples
             public FixedString4096Bytes Spawn;
             public FixedString4096Bytes PersonajesJugadores;
             public FixedString4096Bytes PosicionJugadores;
-=======
+        }
         struct MensajeMovimientoClienteServidor
         {
             public char codigoMensaje;
@@ -88,7 +85,6 @@ namespace Unity.Networking.Transport.Samples
             public FixedString4096Bytes nombrePersonaje;
             public float PosNewX;
             public float PosNewY;
->>>>>>> Stashed changes
         }
 
         void Start()
@@ -337,7 +333,7 @@ namespace Unity.Networking.Transport.Samples
                         break;
                     }
                 }
-            }            
+            }
         }
 
         void CalcularNuevaPosicionCliente(MensajeMovimientoClienteServidor mensajeMovimiento, NetworkConnection connection)
@@ -441,7 +437,7 @@ namespace Unity.Networking.Transport.Samples
 
             Debug.Log(JugadoresJugando);
             Debug.Log(SpawnPointOcupados);
-        
+
 
             // Obtener la conexi�n del cliente utilizando el diccionario
             if (conexionesPorId.TryGetValue(idUsuario, out var connection))
@@ -459,7 +455,7 @@ namespace Unity.Networking.Transport.Samples
                 SpawnPointOcupados.Add(Pos);
                 SpawnPointDisponibles.Remove(Pos);
                 EnviarPosicionJugadores();
-                
+
             }
             else
             {
@@ -525,7 +521,7 @@ namespace Unity.Networking.Transport.Samples
                 if (personajesPorCliente.ContainsKey(idCliente))
                 {
                     ListaClientesConectados.text += $"{idCliente} -> {personajesPorCliente[idCliente]}\n";
-                        
+
                     if (conexionesPorId.TryGetValue(idCliente, out var connection))
                     {
                         // Enviar el mensaje de error al cliente
@@ -542,7 +538,6 @@ namespace Unity.Networking.Transport.Samples
                 }
             }
         }
-
+        
     }
-
 }

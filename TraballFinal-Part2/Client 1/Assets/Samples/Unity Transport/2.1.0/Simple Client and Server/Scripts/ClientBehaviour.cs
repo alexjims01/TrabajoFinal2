@@ -184,7 +184,6 @@ public class ClientBehaviour : MonoBehaviour
                 else if (codigoMensaje == 'S')
                 {
                     string idUsuario = stream.ReadFixedString4096().ToString();
-<<<<<<< Updated upstream
                     personajeSeleccionado = stream.ReadFixedString4096().ToString();
                     string posicionComoCadena = stream.ReadFixedString4096().ToString();
                     string personajesJugadores = stream.ReadFixedString4096().ToString();
@@ -223,7 +222,6 @@ public class ClientBehaviour : MonoBehaviour
                         }
                         
                     }*/
-=======
                     string mensaje = stream.ReadFixedString4096().ToString();
 
                     personajeSeleccionado = mensaje;
@@ -258,8 +256,6 @@ public class ClientBehaviour : MonoBehaviour
                             characterScript.ActualizarMovimiento(new Vector2(posNewX, posNewY));
                         }
                     }
-
->>>>>>> Stashed changes
                 }
                 else
                 {

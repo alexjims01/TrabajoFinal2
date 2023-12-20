@@ -201,5 +201,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8e781a0291b8ee4f9fa6b92753db46f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  movementSpeed: 5
-  jumpForce: 5
+  movement: {x: 0, y: 0}
+  posicionPrevia: {x: 0, y: 0}
+  TeclaPulsada: 
