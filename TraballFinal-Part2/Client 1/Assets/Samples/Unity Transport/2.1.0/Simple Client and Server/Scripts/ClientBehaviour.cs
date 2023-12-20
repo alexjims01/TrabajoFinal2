@@ -167,11 +167,44 @@ public class ClientBehaviour : MonoBehaviour
                 else if(codigoMensaje == 'S')
                 {
                     string idUsuario = stream.ReadFixedString4096().ToString();
-                    string mensaje = stream.ReadFixedString4096().ToString();
+                    personajeSeleccionado = stream.ReadFixedString4096().ToString();
                     string posicionComoCadena = stream.ReadFixedString4096().ToString();
+                    string personajesJugadores = stream.ReadFixedString4096().ToString();
+                    string PosicionJugadores = stream.ReadFixedString4096().ToString();
+                    Debug.Log("PERSONAJES JUGANDO: ");
+                    Debug.Log(personajesJugadores);
+                    Debug.Log("POSICIONES SPAWN ");
+                    Debug.Log(PosicionJugadores);
+                    Debug.Log("------------------ ");
                     
-                    personajeSeleccionado = mensaje;
                     LoadGame(personajeSeleccionado, posicionComoCadena);
+                }
+                else if(codigoMensaje == 'X')
+                {
+                    
+                    /*
+                    // Recibir la lista de personajes disponibles
+                    int cantidadPersonajes = stream.ReadInt();
+
+                    for (int i = 0; i < cantidadPersonajes; i++)
+                    {
+                        string personajeDisponible = stream.ReadFixedString4096().ToString();
+                        if(personajeSeleccionado != personajeDisponible)
+                        {
+                            Debug.Log("Este no es mi personaje:");
+                            Debug.Log(personajeDisponible);
+                            //GameObject prefab = FindPersonajePrefab("Hero Knight");
+                            GameObject cubo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                            Vector3 spawnPoint = Vector3.zero;
+                            Instantiate(cubo, spawnPoint, Quaternion.identity);
+                        }
+                        else
+                        {
+                            Debug.Log("Este es mi personaje:");
+                            Debug.Log(personajeDisponible);
+                        }
+                        
+                    }*/
                 }
                 else
                 {

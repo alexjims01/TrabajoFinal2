@@ -12,6 +12,18 @@ using UnityEditor;
 using System.IO;
 using UnityEditor.VersionControl;
 
+
+/*
+// CLAVES MENSAJES //
+    E -> Error
+    H
+    X
+    C -> Seleccion de personaje
+    S -> Personaje aceptado
+    P -> Lista Personajes Disponibles
+    R -> Posicion Spawn
+*/
+
 public class ClientBehaviour : MonoBehaviour
 {
     NetworkDriver m_Driver;
@@ -29,6 +41,8 @@ public class ClientBehaviour : MonoBehaviour
     [SerializeField] Button boton;
 
     private FixedString4096Bytes IdCliente;
+
+    string personajeSeleccionado;
 
     public static ClientBehaviour Instance { get; private set; }
 
@@ -69,7 +83,6 @@ public class ClientBehaviour : MonoBehaviour
 
     void Start()
     {
-
         m_Driver = NetworkDriver.Create();
 
         // Crear el pipeline con Fragmentation y ReliableSequenced
@@ -154,9 +167,44 @@ public class ClientBehaviour : MonoBehaviour
                 else if(codigoMensaje == 'S')
                 {
                     string idUsuario = stream.ReadFixedString4096().ToString();
-                    string mensaje = stream.ReadFixedString4096().ToString();
+                    personajeSeleccionado = stream.ReadFixedString4096().ToString();
+                    string posicionComoCadena = stream.ReadFixedString4096().ToString();
+                    string personajesJugadores = stream.ReadFixedString4096().ToString();
+                    string PosicionJugadores = stream.ReadFixedString4096().ToString();
+                    Debug.Log("PERSONAJES JUGANDO: ");
+                    Debug.Log(personajesJugadores);
+                    Debug.Log("POSICIONES SPAWN ");
+                    Debug.Log(PosicionJugadores);
+                    Debug.Log("------------------ ");
                     
-                    LoadGame(mensaje);
+                    LoadGame(personajeSeleccionado, posicionComoCadena);
+                }
+                else if(codigoMensaje == 'X')
+                {
+                    
+                    /*
+                    // Recibir la lista de personajes disponibles
+                    int cantidadPersonajes = stream.ReadInt();
+
+                    for (int i = 0; i < cantidadPersonajes; i++)
+                    {
+                        string personajeDisponible = stream.ReadFixedString4096().ToString();
+                        if(personajeSeleccionado != personajeDisponible)
+                        {
+                            Debug.Log("Este no es mi personaje:");
+                            Debug.Log(personajeDisponible);
+                            //GameObject prefab = FindPersonajePrefab("Hero Knight");
+                            GameObject cubo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                            Vector3 spawnPoint = Vector3.zero;
+                            Instantiate(cubo, spawnPoint, Quaternion.identity);
+                        }
+                        else
+                        {
+                            Debug.Log("Este es mi personaje:");
+                            Debug.Log(personajeDisponible);
+                        }
+                        
+                    }*/
                 }
                 else
                 {
@@ -226,19 +274,12 @@ public class ClientBehaviour : MonoBehaviour
 
     }
 
-    public void LoadGame(string character)
+    public void LoadGame(string character, string posicionSpawn)
     {
-        
-        string nuevaEscena = "Game";
         PlayerPrefs.SetString("PersonajeSeleccionado", character);
-        SceneManager.LoadScene(nuevaEscena);
-        //SceneParameters sceneParameters = new SceneParameters();
-        //sceneParameters.Add("PersonajeSeleccionado", character);
-        //SceneManager.LoadScene(nuevaEscena, sceneParameters);
-        
-        // Cargar la nueva escena
-        //SceneManager.LoadScene(nuevaEscena);
+        PlayerPrefs.SetString("PosicionSpawn", posicionSpawn);
 
+        SceneManager.LoadScene("Game");
     }
 
     private void CallCharacterSelected(string selectedCharacterName)
@@ -273,4 +314,3 @@ public class ClientBehaviour : MonoBehaviour
         }
     }
 }
-

@@ -12,9 +12,9 @@ using UnityEngine.SceneManagement;
     H
     X
     C -> Seleccion de personaje
-    S -> Personaje aceptado
+    S -> Personaje aceptado + Posicion Spawn
     P -> Lista Personajes Disponibles
-    R -> Posicion Spawn
+    X -> Posicion Jugadores
 */
 namespace Unity.Networking.Transport.Samples
 {
@@ -32,13 +32,13 @@ namespace Unity.Networking.Transport.Samples
         private List<string> nombresClientes = new List<string>();
 
         private List<string> PersonajesDisponibles = new List<string>();
-        private List<string> PersonajesUsados = new List<string>();
+        private List<string> JugadoresJugando = new List<string>();
 
         private Dictionary<string, string> personajesPorCliente = new Dictionary<string, string>();
 
         private Dictionary<string, NetworkConnection> conexionesPorId = new Dictionary<string, NetworkConnection>();
 
-
+        
         [SerializeField] TextMeshProUGUI textoMeshPro;
         [SerializeField] TextMeshProUGUI ListaClientesConectados;
 
@@ -47,6 +47,7 @@ namespace Unity.Networking.Transport.Samples
 
         private List<Transform> SpawnPointDisponibles = new List<Transform>();
         private List<Transform> SpawnPointOcupados = new List<Transform>();
+
 
         struct MensajeServidorCliente
         {
@@ -61,6 +62,8 @@ namespace Unity.Networking.Transport.Samples
             public FixedString4096Bytes NombresCliente;
             public FixedString4096Bytes Personaje;
             public FixedString4096Bytes Spawn;
+            public FixedString4096Bytes PersonajesJugadores;
+            public FixedString4096Bytes PosicionJugadores;
         }
 
         void Start()
@@ -183,12 +186,12 @@ namespace Unity.Networking.Transport.Samples
                                         // A�adir el personaje anterior a la lista de PersonajesDisponibles
                                         if (!string.IsNullOrEmpty(personajeAnterior))
                                         {
-                                            PersonajesUsados.Remove(personajeAnterior);
+                                            JugadoresJugando.Remove(personajeAnterior);
                                             PersonajesDisponibles.Add(personajeAnterior);
                                         }
 
                                         // Remover el nuevo personaje de la lista de PersonajesDisponibles
-                                        PersonajesUsados.Add(nuevoPersonaje);
+                                        JugadoresJugando.Add(nuevoPersonaje);
                                         PersonajesDisponibles.Remove(nuevoPersonaje);
 
                                         // Enviar la lista actualizada de personajes disponibles a todos los clientes
@@ -205,7 +208,7 @@ namespace Unity.Networking.Transport.Samples
                                     personajesPorCliente[idUsuario] = nuevoPersonaje;
 
                                     // Remover el nuevo personaje de la lista de PersonajesDisponibles
-                                    PersonajesUsados.Add(nuevoPersonaje);
+                                    JugadoresJugando.Add(nuevoPersonaje);
                                     PersonajesDisponibles.Remove(nuevoPersonaje);
 
                                     // Enviar la lista actualizada de personajes disponibles a todos los clientes
@@ -273,7 +276,7 @@ namespace Unity.Networking.Transport.Samples
                             // A�adir el personaje nuevamente a la lista de PersonajesDisponibles
                             if (!string.IsNullOrEmpty(personajeDesconectado))
                             {
-                                PersonajesUsados.Remove(personajeDesconectado);
+                                JugadoresJugando.Remove(personajeDesconectado);
                                 PersonajesDisponibles.Add(personajeDesconectado);
                             }
                         }
@@ -325,6 +328,7 @@ namespace Unity.Networking.Transport.Samples
 
         void EnviarPersonajeAceptado(string idUsuario, string mensaje)
         {
+
             MensajePersonajeSeleccionado msg = new MensajePersonajeSeleccionado();
             //MensajeServidorCliente msg = new MensajeServidorCliente();
 
@@ -334,9 +338,12 @@ namespace Unity.Networking.Transport.Samples
 
             Transform Pos = SpawnPointDisponibles[0];
             msg.Spawn = Pos.position.ToString();
-            SpawnPointOcupados.Add(Pos);
-            SpawnPointDisponibles.Remove(Pos);
- 
+            msg.PersonajesJugadores = JugadoresJugando.ToString();
+            msg.PosicionJugadores = SpawnPointOcupados.ToString();
+
+            Debug.Log(JugadoresJugando);
+            Debug.Log(SpawnPointOcupados);
+        
 
             // Obtener la conexi�n del cliente utilizando el diccionario
             if (conexionesPorId.TryGetValue(idUsuario, out var connection))
@@ -347,7 +354,14 @@ namespace Unity.Networking.Transport.Samples
                 writer.WriteFixedString4096(msg.NombresCliente);
                 writer.WriteFixedString4096(msg.Personaje);
                 writer.WriteFixedString4096(msg.Spawn);
+                writer.WriteFixedString4096(msg.PersonajesJugadores);
+                writer.WriteFixedString4096(msg.PosicionJugadores);
+
                 m_Driver.EndSend(writer);
+                SpawnPointOcupados.Add(Pos);
+                SpawnPointDisponibles.Remove(Pos);
+                EnviarPosicionJugadores();
+                
             }
             else
             {
@@ -403,6 +417,31 @@ namespace Unity.Networking.Transport.Samples
                 }
 
                 m_Driver.EndSend(writer);
+            }
+        }
+
+        void EnviarPosicionJugadores()
+        {
+            foreach (var idCliente in nombresClientes)
+            {
+                if (personajesPorCliente.ContainsKey(idCliente))
+                {
+                    ListaClientesConectados.text += $"{idCliente} -> {personajesPorCliente[idCliente]}\n";
+                        
+                    if (conexionesPorId.TryGetValue(idCliente, out var connection))
+                    {
+                        // Enviar el mensaje de error al cliente
+                        m_Driver.BeginSend(m_MyPipeline, connection, out var writer);
+                        writer.WriteByte((byte)'X');
+
+                        writer.WriteFixedString4096(personajesPorCliente[idCliente]);
+                        m_Driver.EndSend(writer);
+                    }
+                    else
+                    {
+                        Debug.LogError($"No se pudo encontrar la conexi�n para el cliente con ID {idCliente}");
+                    }
+                }
             }
         }
 
