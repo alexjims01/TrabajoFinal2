@@ -1,0 +1,6 @@
+Cambiar la deteccion de movimiento, en vez de detectar las teclas hacer que detecte el cojunto de 
+los ejes horizontales y verticales -> Input.Axis("Horizontal")
+
+Hacer que no pueda saltar si se encuentra en el aire -> Usar un raycast que detecte el suelo
+
+Agregar un input mas para el ataque con las animaciones correspondientes (solo si ya esta todo hecho)

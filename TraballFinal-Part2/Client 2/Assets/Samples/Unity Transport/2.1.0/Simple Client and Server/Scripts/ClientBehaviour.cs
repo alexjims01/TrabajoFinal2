@@ -22,6 +22,10 @@ using UnityEditor.VersionControl;
     S -> Personaje aceptado
     P -> Lista Personajes Disponibles
     R -> Posicion Spawn
+<<<<<<< Updated upstream
+=======
+    M -> Accion del jugador
+>>>>>>> Stashed changes
 */
 
 public class ClientBehaviour : MonoBehaviour
@@ -66,6 +70,22 @@ public class ClientBehaviour : MonoBehaviour
         public char CodigoMensaje;
         public FixedString4096Bytes NombresCliente;
         public FixedString4096Bytes Personaje;
+    }
+
+    struct MensajeMovimientoClienteServidor
+    {
+        public char codigoMensaje;
+        public FixedString4096Bytes TeclaPulsada;
+        public float PosAntX;
+        public float PosAntY;
+    }
+
+    struct MensajeMovimientoServidorCliente
+    {
+        public char codigoMensaje;
+        public FixedString4096Bytes nombrePersonaje;
+        public float PosNewX;
+        public float PosNewY;
     }
 
     private void Awake()
@@ -121,7 +141,7 @@ public class ClientBehaviour : MonoBehaviour
 
     void Update()
     {
-
+        
         m_Driver.ScheduleUpdate().Complete();
 
         if (!m_Connection.IsCreated)
@@ -145,14 +165,14 @@ public class ClientBehaviour : MonoBehaviour
             else if (cmd == NetworkEvent.Type.Data)
             {
                 char codigoMensaje = (char)stream.ReadByte();
-                if(codigoMensaje == 'E')
+                if (codigoMensaje == 'E')
                 {
                     string idUsuario = stream.ReadFixedString4096().ToString();
                     string mensaje = stream.ReadFixedString4096().ToString();
 
                     Debug.Log(mensaje);
                 }
-                else if(codigoMensaje == 'P')
+                else if (codigoMensaje == 'P')
                 {
                     // Recibir la lista de personajes disponibles
                     int cantidadPersonajes = stream.ReadInt();
@@ -164,9 +184,10 @@ public class ClientBehaviour : MonoBehaviour
                         Debug.Log(personajeDisponible);
                     }
                 }
-                else if(codigoMensaje == 'S')
+                else if (codigoMensaje == 'S')
                 {
                     string idUsuario = stream.ReadFixedString4096().ToString();
+<<<<<<< Updated upstream
                     personajeSeleccionado = stream.ReadFixedString4096().ToString();
                     string posicionComoCadena = stream.ReadFixedString4096().ToString();
                     string personajesJugadores = stream.ReadFixedString4096().ToString();
@@ -205,6 +226,43 @@ public class ClientBehaviour : MonoBehaviour
                         }
                         
                     }*/
+=======
+                    string mensaje = stream.ReadFixedString4096().ToString();
+
+                    personajeSeleccionado = mensaje;
+                }
+                else if (codigoMensaje == 'R')
+                {
+                    string idUsuario = stream.ReadFixedString4096().ToString();
+                    string posicionComoCadena = stream.ReadFixedString4096().ToString();
+
+                    LoadGame(personajeSeleccionado, posicionComoCadena);
+                }
+                else if (codigoMensaje == 'M')
+                {
+                    // Procesar el mensaje de movimiento
+                    string nombrePersonaje = stream.ReadFixedString4096().ToString();
+                    float posNewX = stream.ReadFloat();
+                    float posNewY = stream.ReadFloat();
+
+                    GameObject personaje = GameObject.Find(nombrePersonaje + "(Clone)");
+
+                    if (personaje != null)
+                    {
+                    
+                        // Acceder al componente Character asociado al GameObject
+                        Character characterScript = personaje.GetComponent<Character>();
+
+                        // Verificar si se encontró el componente Character
+                        if (characterScript != null)
+                        {
+                            // Ahora puedes acceder a las variables o métodos del script Character
+                            // Ejemplo:
+                            characterScript.ActualizarMovimiento(new Vector2(posNewX, posNewY));
+                        }
+                    }
+
+>>>>>>> Stashed changes
                 }
                 else
                 {
@@ -313,4 +371,34 @@ public class ClientBehaviour : MonoBehaviour
 
         }
     }
+<<<<<<< Updated upstream
+=======
+
+    public void EnviarInputServidor(Vector2 posAnt, string tecla)
+    {
+        MensajeMovimientoClienteServidor mensaje = new MensajeMovimientoClienteServidor();
+
+        mensaje.codigoMensaje = 'M';
+        mensaje.TeclaPulsada = tecla;
+        mensaje.PosAntX = posAnt.x;
+        mensaje.PosAntY = posAnt.y;
+
+        if (m_Connection.IsCreated)
+        {
+            // Crear un escritor para el mensaje
+            var writer = m_Driver.BeginSend(m_MyPipeline, m_Connection, out var tempWriter);
+
+            // Escribir los datos del mensaje en el escritor
+            tempWriter.WriteByte((byte)mensaje.codigoMensaje);
+            tempWriter.WriteFixedString4096(mensaje.TeclaPulsada);
+            tempWriter.WriteFloat(mensaje.PosAntX);
+            tempWriter.WriteFloat(mensaje.PosAntY);
+
+            // Finalizar el env�o
+            m_Driver.EndSend(tempWriter);
+
+        }
+
+    }
+>>>>>>> Stashed changes
 }

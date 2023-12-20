@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Codice.Client.Common.Encryption;
 using TMPro;
 using UnityEngine.SceneManagement;
+using System;
 
 /*
 // CLAVES MENSAJES //
@@ -14,8 +15,15 @@ using UnityEngine.SceneManagement;
     C -> Seleccion de personaje
     S -> Personaje aceptado + Posicion Spawn
     P -> Lista Personajes Disponibles
+<<<<<<< Updated upstream
     X -> Posicion Jugadores
+=======
+    R -> Posicion Spawn
+    M -> Movimiento/Accion del jugador
+>>>>>>> Stashed changes
 */
+
+
 namespace Unity.Networking.Transport.Samples
 {
     public class ServerBehaviour : MonoBehaviour
@@ -56,6 +64,7 @@ namespace Unity.Networking.Transport.Samples
             public FixedString4096Bytes Mensaje;
         }
 
+<<<<<<< Updated upstream
         struct MensajePersonajeSeleccionado
         {
             public char CodigoMensaje;
@@ -64,6 +73,22 @@ namespace Unity.Networking.Transport.Samples
             public FixedString4096Bytes Spawn;
             public FixedString4096Bytes PersonajesJugadores;
             public FixedString4096Bytes PosicionJugadores;
+=======
+        struct MensajeMovimientoClienteServidor
+        {
+            public char codigoMensaje;
+            public FixedString4096Bytes TeclaPulsada;
+            public float PosAntX;
+            public float PosAntY;
+        }
+
+        struct MensajeMovimientoServidorCliente
+        {
+            public char codigoMensaje;
+            public FixedString4096Bytes nombrePersonaje;
+            public float PosNewX;
+            public float PosNewY;
+>>>>>>> Stashed changes
         }
 
         void Start()
@@ -229,7 +254,7 @@ namespace Unity.Networking.Transport.Samples
                         {
                             codigoMensaje = 'H';
                             byte byteCodigoMensaje = (byte)codigoMensaje;
-                            int numeroAleatorio = Random.Range(100, 1000);
+                            int numeroAleatorio = UnityEngine.Random.Range(100, 1000);
                             FixedString4096Bytes nombreCliente = idCliente + numeroAleatorio.ToString();
                             float tiempoTranscurrido = Time.time - tiempoInicio;
 
@@ -262,6 +287,19 @@ namespace Unity.Networking.Transport.Samples
 
                             EnviarPersonajesDisponibles();
                         }
+
+                        else if (codigoMensaje == 'M')
+                        {
+                            MensajeMovimientoClienteServidor mensajeMovimiento = new MensajeMovimientoClienteServidor();
+
+                            mensajeMovimiento.codigoMensaje = codigoMensaje;
+                            mensajeMovimiento.TeclaPulsada = stream.ReadFixedString4096();
+                            mensajeMovimiento.PosAntX = stream.ReadFloat();
+                            mensajeMovimiento.PosAntY = stream.ReadFloat();
+
+                            CalcularNuevaPosicionCliente(mensajeMovimiento, m_Connections[i]);
+                        }
+
                     }
                     else if (cmd == NetworkEvent.Type.Disconnect)
                     {
@@ -300,6 +338,66 @@ namespace Unity.Networking.Transport.Samples
                     }
                 }
             }            
+        }
+
+        void CalcularNuevaPosicionCliente(MensajeMovimientoClienteServidor mensajeMovimiento, NetworkConnection connection)
+        {
+            Vector2 unidadesDesplazamiento = new Vector2();
+
+            float desplazamiento = 1.0f;
+            float salto = 10f;
+
+            if (mensajeMovimiento.TeclaPulsada == "A") // Cambia "A" a la cadena correcta que representa la tecla A
+            {
+                unidadesDesplazamiento.x -= desplazamiento;
+            }
+            else if (mensajeMovimiento.TeclaPulsada == "D") // Cambia "D" a la cadena correcta que representa la tecla D
+            {
+                unidadesDesplazamiento.x += desplazamiento;
+            }
+            else if (mensajeMovimiento.TeclaPulsada == "W") // Cambia "W" a la cadena correcta que representa la tecla W
+            {
+                unidadesDesplazamiento.y += salto;
+            }
+            else if (mensajeMovimiento.TeclaPulsada == "S") // Cambia "S" a la cadena correcta que representa la tecla S
+            {
+                //NuevaPosicionCliente.y -= desplazamiento;
+            }
+
+            string idCliente = ObtenerIdClienteDesconectado(connection);
+
+            // La nueva posición se ha actualizado en función de la tecla pulsada
+            //Debug.Log($"Nueva posición calculada para el cliente {idCliente}: " + NuevaPosicionCliente);
+
+            EnviarPosicionClientes(idCliente, unidadesDesplazamiento);
+
+
+        }
+
+        private void EnviarPosicionClientes(string idCliente, Vector2 nuevaPosicionCliente)
+        {
+            //FixedString4096Bytes personajeCliente;
+            personajesPorCliente.TryGetValue(idCliente, out string personajeCliente);
+
+            MensajeMovimientoServidorCliente mensaje = new MensajeMovimientoServidorCliente();
+
+            mensaje.codigoMensaje = 'M';
+            mensaje.nombrePersonaje = personajeCliente;
+            mensaje.PosNewX = nuevaPosicionCliente.x;
+            mensaje.PosNewY = nuevaPosicionCliente.y;
+
+            foreach (var connection in m_Connections)
+            {
+                // Usar el pipeline creado al enviar datos
+                m_Driver.BeginSend(m_MyPipeline, connection, out var writer);
+                writer.WriteByte((byte)mensaje.codigoMensaje);
+                writer.WriteFixedString4096(mensaje.nombrePersonaje);
+                writer.WriteFloat(mensaje.PosNewX);
+                writer.WriteFloat(mensaje.PosNewY);
+
+                m_Driver.EndSend(writer);
+            }
+
         }
 
         void EnviarErrorAlCliente(string idUsuario, string mensaje)
