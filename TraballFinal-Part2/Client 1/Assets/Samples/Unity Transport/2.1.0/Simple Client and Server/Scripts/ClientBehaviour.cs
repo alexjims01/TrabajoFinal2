@@ -168,14 +168,9 @@ public class ClientBehaviour : MonoBehaviour
                 {
                     string idUsuario = stream.ReadFixedString4096().ToString();
                     string mensaje = stream.ReadFixedString4096().ToString();
-                    
-                    personajeSeleccionado = mensaje;
-                }
-                else if(codigoMensaje == 'R')
-                {
-                    string idUsuario = stream.ReadFixedString4096().ToString();
                     string posicionComoCadena = stream.ReadFixedString4096().ToString();
                     
+                    personajeSeleccionado = mensaje;
                     LoadGame(personajeSeleccionado, posicionComoCadena);
                 }
                 else

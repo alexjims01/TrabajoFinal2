@@ -32,6 +32,7 @@ namespace Unity.Networking.Transport.Samples
         private List<string> nombresClientes = new List<string>();
 
         private List<string> PersonajesDisponibles = new List<string>();
+        private List<string> PersonajesUsados = new List<string>();
 
         private Dictionary<string, string> personajesPorCliente = new Dictionary<string, string>();
 
@@ -45,12 +46,21 @@ namespace Unity.Networking.Transport.Samples
         public Transform SpawnPoint_2;
 
         private List<Transform> SpawnPointDisponibles = new List<Transform>();
+        private List<Transform> SpawnPointOcupados = new List<Transform>();
 
         struct MensajeServidorCliente
         {
             public char CodigoMensaje;
             public FixedString4096Bytes NombresCliente;
             public FixedString4096Bytes Mensaje;
+        }
+
+        struct MensajePersonajeSeleccionado
+        {
+            public char CodigoMensaje;
+            public FixedString4096Bytes NombresCliente;
+            public FixedString4096Bytes Personaje;
+            public FixedString4096Bytes Spawn;
         }
 
         void Start()
@@ -173,10 +183,12 @@ namespace Unity.Networking.Transport.Samples
                                         // A�adir el personaje anterior a la lista de PersonajesDisponibles
                                         if (!string.IsNullOrEmpty(personajeAnterior))
                                         {
+                                            PersonajesUsados.Remove(personajeAnterior);
                                             PersonajesDisponibles.Add(personajeAnterior);
                                         }
 
                                         // Remover el nuevo personaje de la lista de PersonajesDisponibles
+                                        PersonajesUsados.Add(nuevoPersonaje);
                                         PersonajesDisponibles.Remove(nuevoPersonaje);
 
                                         // Enviar la lista actualizada de personajes disponibles a todos los clientes
@@ -193,6 +205,7 @@ namespace Unity.Networking.Transport.Samples
                                     personajesPorCliente[idUsuario] = nuevoPersonaje;
 
                                     // Remover el nuevo personaje de la lista de PersonajesDisponibles
+                                    PersonajesUsados.Add(nuevoPersonaje);
                                     PersonajesDisponibles.Remove(nuevoPersonaje);
 
                                     // Enviar la lista actualizada de personajes disponibles a todos los clientes
@@ -205,7 +218,7 @@ namespace Unity.Networking.Transport.Samples
                                     conexionesPorId[idUsuario] = m_Connections[i];
                                 }
                                 EnviarPersonajeAceptado(idUsuario, nuevoPersonaje);
-                                EnviarPosicionSpawn(idUsuario,"spawn1");
+
                             }
                         }
 
@@ -260,6 +273,7 @@ namespace Unity.Networking.Transport.Samples
                             // A�adir el personaje nuevamente a la lista de PersonajesDisponibles
                             if (!string.IsNullOrEmpty(personajeDesconectado))
                             {
+                                PersonajesUsados.Remove(personajeDesconectado);
                                 PersonajesDisponibles.Add(personajeDesconectado);
                             }
                         }
@@ -311,11 +325,18 @@ namespace Unity.Networking.Transport.Samples
 
         void EnviarPersonajeAceptado(string idUsuario, string mensaje)
         {
-            MensajeServidorCliente msg = new MensajeServidorCliente();
+            MensajePersonajeSeleccionado msg = new MensajePersonajeSeleccionado();
+            //MensajeServidorCliente msg = new MensajeServidorCliente();
 
             msg.CodigoMensaje = 'S';
             msg.NombresCliente = idUsuario;
-            msg.Mensaje = mensaje;
+            msg.Personaje = mensaje;
+
+            Transform Pos = SpawnPointDisponibles[0];
+            msg.Spawn = Pos.position.ToString();
+            SpawnPointOcupados.Add(Pos);
+            SpawnPointDisponibles.Remove(Pos);
+ 
 
             // Obtener la conexi�n del cliente utilizando el diccionario
             if (conexionesPorId.TryGetValue(idUsuario, out var connection))
@@ -324,7 +345,8 @@ namespace Unity.Networking.Transport.Samples
                 m_Driver.BeginSend(m_MyPipeline, connection, out var writer);
                 writer.WriteByte((byte)msg.CodigoMensaje);
                 writer.WriteFixedString4096(msg.NombresCliente);
-                writer.WriteFixedString4096(msg.Mensaje);
+                writer.WriteFixedString4096(msg.Personaje);
+                writer.WriteFixedString4096(msg.Spawn);
                 m_Driver.EndSend(writer);
             }
             else
@@ -384,39 +406,6 @@ namespace Unity.Networking.Transport.Samples
             }
         }
 
-        void EnviarPosicionSpawn(string idUsuario, string spawnpoint)
-        {
-            MensajeServidorCliente msg = new MensajeServidorCliente();
-
-            msg.CodigoMensaje = 'R';
-            msg.NombresCliente = idUsuario;
-            msg.Mensaje = "";
-            Transform Pos = SpawnPointDisponibles[0];
-
-            msg.Mensaje = Pos.position.ToString();
-            SpawnPointDisponibles.Remove(Pos);
-            // Obtener la conexi�n del cliente utilizando el diccionario
-            if (conexionesPorId.TryGetValue(idUsuario, out var connection))
-            {
-                // Enviar el mensaje de error al cliente
-                m_Driver.BeginSend(m_MyPipeline, connection, out var writer);
-                writer.WriteByte((byte)msg.CodigoMensaje);
-                writer.WriteFixedString4096(msg.NombresCliente);
-                writer.WriteFixedString4096(msg.Mensaje);
-                m_Driver.EndSend(writer);
-            }
-            else
-            {
-                Debug.LogError($"No se pudo encontrar la conexi�n para el cliente con ID {idUsuario}");
-            }
-
-            // Crear un mensaje que contenga la información relevante de la escena
-            //MensajeInformacionEscena mensaje = new MensajeInformacionEscena();
-            // Rellenar mensaje con datos de la escena
-
-            // Enviar el mensaje a todos los clientes
-            //EnviarMensajeATodosLosClientes(mensaje);
-        }
     }
 
 }
