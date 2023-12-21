@@ -19,10 +19,10 @@ using UnityEditor.VersionControl;
     H
     X
     C -> Seleccion de personaje
-    S -> Personaje aceptado
+    S -> Personaje aceptado + Posicion Spawn
     P -> Lista Personajes Disponibles
-    R -> Posicion Spawn
-    M -> Accion del jugador
+    X -> Posicion Jugadores
+    M -> Movimiento/Accion del jugador
 */
 
 public class ClientBehaviour : MonoBehaviour
@@ -43,7 +43,7 @@ public class ClientBehaviour : MonoBehaviour
 
     private FixedString4096Bytes IdCliente;
 
-    string personajeSeleccionado;
+    string personajeSeleccionado = "";
 
     public GameObject[] personajesPrefabs;
 
@@ -189,31 +189,7 @@ public class ClientBehaviour : MonoBehaviour
                     personajeSeleccionado = stream.ReadFixedString4096().ToString();
                     string posicionComoCadena = stream.ReadFixedString4096().ToString();
 
-                    int cantidadJugadores = stream.ReadInt();
-
-                    string OtroJugador = "";
-                    for (int i = 0; i < cantidadJugadores; i++)
-                    {
-                        string personajeJugando = stream.ReadFixedString4096().ToString();
-                        if(personajeJugando != personajeSeleccionado)
-                        {
-                            OtroJugador = personajeJugando;
-                            //GameObject prefab = FindPersonajePrefab(personajeJugando);
-                            //Instantiate(prefab, Vector3.zero, Quaternion.identity);
-                        }
-                    }
-                    int cantidadSpawns = stream.ReadInt();
-
-                    string posicionOtroJugador = "";
-                    for (int i = 0; i < cantidadSpawns; i++)
-                    {
-                        string spawnPoint = stream.ReadFixedString4096().ToString();
-                        if(spawnPoint != posicionComoCadena)
-                        {
-                            posicionOtroJugador = spawnPoint;
-                        }
-                    }
-                    LoadGame(personajeSeleccionado, posicionComoCadena, OtroJugador, posicionOtroJugador);
+                    LoadGame(personajeSeleccionado, posicionComoCadena);
                 }
                 else if(codigoMensaje == 'X')
                 {
@@ -232,7 +208,6 @@ public class ClientBehaviour : MonoBehaviour
 
                     if (personaje != null)
                     {
-                    
                         // Acceder al componente Character asociado al GameObject
                         Character characterScript = personaje.GetComponent<Character>();
 
@@ -244,23 +219,11 @@ public class ClientBehaviour : MonoBehaviour
                             characterScript.ActualizarMovimiento(new Vector2(posNewX, posNewY));
                         }
                     }
-                }
-                else if (codigoMensaje == 'T')
-                {
-                    // Procesar el mensaje de movimiento
-                    string nombrePersonaje = stream.ReadFixedString4096().ToString();
-                    float OtherPlayerNewX = stream.ReadFloat();
-                    float OtherPlayerNewY = stream.ReadFloat();
-
-                    GameObject personaje = GameObject.Find(nombrePersonaje + "(Clone)");
-
-                    if (nombrePersonaje != personajeSeleccionado && personaje != null)
+                    else if(personajeSeleccionado != "")
                     {
-                        Debug.Log("Otro Jugador se ha movido");
-                    }
-                    else
-                    {
-                        //Debug.Log("Otro Jugador se ha movido y no está en pantalla");
+                        //El juego aun no ha instanciado ese personaje
+                        GameObject prefab = FindPersonajePrefab(nombrePersonaje);
+                        Instantiate(prefab, new Vector2(posNewX, posNewY), Quaternion.identity);
                     }
                 }
                 else
@@ -331,12 +294,10 @@ public class ClientBehaviour : MonoBehaviour
 
     }
 
-    public void LoadGame(string character, string posicionSpawn, string OtroJugador, string posicionOtroJugador)
+    public void LoadGame(string character, string posicionSpawn)
     {
         PlayerPrefs.SetString("PersonajeSeleccionado", character);
         PlayerPrefs.SetString("PosicionSpawn", posicionSpawn);
-        PlayerPrefs.SetString("OtroJugador", OtroJugador);
-        PlayerPrefs.SetString("posicionOtroJugador", posicionOtroJugador);
 
         SceneManager.LoadScene("Game");
     }

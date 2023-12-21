@@ -90,6 +90,9 @@ public class Character : MonoBehaviour
     {
         movement = nuevaPosicion;
         //playerRigidBody.velocity = new Vector2(movement.x * movementSpeed, playerRigidBody.velocity.y*jumpForce);
-        playerRigidBody.velocity = new Vector2(movement.x * movementSpeed, 0);
+        if(playerRigidBody != null)
+        {
+            playerRigidBody.velocity = new Vector2(movement.x * movementSpeed, 0);
+        }
     }
 }

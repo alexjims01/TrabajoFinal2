@@ -17,7 +17,6 @@ using System;
     P -> Lista Personajes Disponibles
     X -> Posicion Jugadores
     M -> Movimiento/Accion del jugador
-    T -> Informar del movimiento de un jugador a los demás
 */
 
 
@@ -366,7 +365,7 @@ namespace Unity.Networking.Transport.Samples
             //Debug.Log($"Nueva posición calculada para el cliente {idCliente}: " + NuevaPosicionCliente);
 
             EnviarPosicionClientes(idCliente, unidadesDesplazamiento);
-            EnviarPosicionRestoClientes(idCliente, unidadesDesplazamiento);
+            //EnviarPosicionRestoClientes(idCliente, unidadesDesplazamiento);
 
 
         }
@@ -379,32 +378,6 @@ namespace Unity.Networking.Transport.Samples
             MensajeMovimientoServidorCliente mensaje = new MensajeMovimientoServidorCliente();
 
             mensaje.codigoMensaje = 'M';
-            mensaje.nombrePersonaje = personajeCliente;
-            mensaje.PosNewX = nuevaPosicionCliente.x;
-            mensaje.PosNewY = nuevaPosicionCliente.y;
-
-            foreach (var connection in m_Connections)
-            {
-                // Usar el pipeline creado al enviar datos
-                m_Driver.BeginSend(m_MyPipeline, connection, out var writer);
-                writer.WriteByte((byte)mensaje.codigoMensaje);
-                writer.WriteFixedString4096(mensaje.nombrePersonaje);
-                writer.WriteFloat(mensaje.PosNewX);
-                writer.WriteFloat(mensaje.PosNewY);
-
-                m_Driver.EndSend(writer);
-            }
-
-        }
-
-        private void EnviarPosicionRestoClientes(string idCliente, Vector2 nuevaPosicionCliente)
-        {
-            //FixedString4096Bytes personajeCliente;
-            personajesPorCliente.TryGetValue(idCliente, out string personajeCliente);
-
-            MensajeMovimientoServidorCliente mensaje = new MensajeMovimientoServidorCliente();
-
-            mensaje.codigoMensaje = 'T';
             mensaje.nombrePersonaje = personajeCliente;
             mensaje.PosNewX = nuevaPosicionCliente.x;
             mensaje.PosNewY = nuevaPosicionCliente.y;
@@ -460,10 +433,6 @@ namespace Unity.Networking.Transport.Samples
             Transform Pos = SpawnPointDisponibles[0];
             msg.Spawn = Pos.position.ToString();
             SpawnPointDisponibles.Remove(Pos);
-            //msg.PersonajesJugadores = JugadoresJugando.ToString();
-            //msg.PosicionJugadores = SpawnPointOcupados.ToString();
-            SpawnPointOcupados.Add(Pos);
-            int numJugadores = JugadoresJugando.Count;
 
 
             // Obtener la conexi�n del cliente utilizando el diccionario
@@ -475,23 +444,8 @@ namespace Unity.Networking.Transport.Samples
                 writer.WriteFixedString4096(msg.NombresCliente);
                 writer.WriteFixedString4096(msg.Personaje);
                 writer.WriteFixedString4096(msg.Spawn);
-                writer.WriteInt(JugadoresJugando.Count);
-                for (int i = 0; i < numJugadores; i++)
-                {
-                    writer.WriteFixedString4096(JugadoresJugando[i]);
-                }
-                writer.WriteInt(JugadoresJugando.Count);
-                for (int i = 0; i < numJugadores; i++)
-                {
-                    writer.WriteFixedString4096(SpawnPointOcupados[i].position.ToString());
-                }
-                //writer.WriteFixedString4096(msg.PersonajesJugadores);
-                //writer.WriteFixedString4096(msg.PosicionJugadores);
 
                 m_Driver.EndSend(writer);
-                //
-                //
-                //EnviarPosicionJugadores();
 
             }
             else
@@ -550,31 +504,6 @@ namespace Unity.Networking.Transport.Samples
                 m_Driver.EndSend(writer);
             }
         }
-
-        /*void EnviarPosicionJugadores()
-        {
-            foreach (var idCliente in nombresClientes)
-            {
-                if (personajesPorCliente.ContainsKey(idCliente))
-                {
-                    ListaClientesConectados.text += $"{idCliente} -> {personajesPorCliente[idCliente]}\n";
-
-                    if (conexionesPorId.TryGetValue(idCliente, out var connection))
-                    {
-                        // Enviar el mensaje de error al cliente
-                        m_Driver.BeginSend(m_MyPipeline, connection, out var writer);
-                        writer.WriteByte((byte)'X');
-
-                        writer.WriteFixedString4096(personajesPorCliente[idCliente]);
-                        m_Driver.EndSend(writer);
-                    }
-                    else
-                    {
-                        Debug.LogError($"No se pudo encontrar la conexi�n para el cliente con ID {idCliente}");
-                    }
-                }
-            }
-        }*/
         
     }
 }
