@@ -191,62 +191,35 @@ public class ClientBehaviour : MonoBehaviour
 
                     int cantidadJugadores = stream.ReadInt();
 
-                    Debug.Log("JUGADORES ACTUALES:");
+                    string OtroJugador = "";
                     for (int i = 0; i < cantidadJugadores; i++)
                     {
                         string personajeJugando = stream.ReadFixedString4096().ToString();
-                        if(personajeJugando !=personajeSeleccionado)
+                        if(personajeJugando != personajeSeleccionado)
                         {
-                            GameObject prefab = FindPersonajePrefab(personajeJugando);
-                            Instantiate(prefab, Vector3.zero, Quaternion.identity);
+                            OtroJugador = personajeJugando;
+                            //GameObject prefab = FindPersonajePrefab(personajeJugando);
+                            //Instantiate(prefab, Vector3.zero, Quaternion.identity);
                         }
                     }
-                    //string personajesJugadores = stream.ReadFixedString4096().ToString();
-                    //string PosicionJugadores = stream.ReadFixedString4096().ToString();
-                    /*Debug.Log("PERSONAJES JUGANDO: ");
-                    Debug.Log(personajesJugadores[0]);
-                    Debug.Log("POSICIONES SPAWN ");
-                    Debug.Log(PosicionJugadores);
-                    Debug.Log("------------------ ");
-                    */
-                    LoadGame(personajeSeleccionado, posicionComoCadena);
+                    int cantidadSpawns = stream.ReadInt();
+
+                    string posicionOtroJugador = "";
+                    for (int i = 0; i < cantidadSpawns; i++)
+                    {
+                        string spawnPoint = stream.ReadFixedString4096().ToString();
+                        if(spawnPoint != posicionComoCadena)
+                        {
+                            posicionOtroJugador = spawnPoint;
+                        }
+                    }
+                    LoadGame(personajeSeleccionado, posicionComoCadena, OtroJugador, posicionOtroJugador);
                 }
                 else if(codigoMensaje == 'X')
                 {
-                    
-                    /*
-                    // Recibir la lista de personajes disponibles
-                    int cantidadPersonajes = stream.ReadInt();
-
-                    for (int i = 0; i < cantidadPersonajes; i++)
-                    {
-                        string personajeDisponible = stream.ReadFixedString4096().ToString();
-                        if(personajeSeleccionado != personajeDisponible)
-                        {
-                            Debug.Log("Este no es mi personaje:");
-                            Debug.Log(personajeDisponible);
-                            //GameObject prefab = FindPersonajePrefab("Hero Knight");
-                            GameObject cubo = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                            Vector3 spawnPoint = Vector3.zero;
-                            Instantiate(cubo, spawnPoint, Quaternion.identity);
-                        }
-                        else
-                        {
-                            Debug.Log("Este es mi personaje:");
-                            Debug.Log(personajeDisponible);
-                        }
-                        
-                    }*/
                     string mensaje = stream.ReadFixedString4096().ToString();
 
                     personajeSeleccionado = mensaje;
-                }
-                else if (codigoMensaje == 'R')
-                {
-                    string idUsuario = stream.ReadFixedString4096().ToString();
-                    string posicionComoCadena = stream.ReadFixedString4096().ToString();
-
-                    LoadGame(personajeSeleccionado, posicionComoCadena);
                 }
                 else if (codigoMensaje == 'M')
                 {
@@ -270,6 +243,24 @@ public class ClientBehaviour : MonoBehaviour
                             // Ejemplo:
                             characterScript.ActualizarMovimiento(new Vector2(posNewX, posNewY));
                         }
+                    }
+                }
+                else if (codigoMensaje == 'T')
+                {
+                    // Procesar el mensaje de movimiento
+                    string nombrePersonaje = stream.ReadFixedString4096().ToString();
+                    float OtherPlayerNewX = stream.ReadFloat();
+                    float OtherPlayerNewY = stream.ReadFloat();
+
+                    GameObject personaje = GameObject.Find(nombrePersonaje + "(Clone)");
+
+                    if (nombrePersonaje != personajeSeleccionado && personaje != null)
+                    {
+                        Debug.Log("Otro Jugador se ha movido");
+                    }
+                    else
+                    {
+                        //Debug.Log("Otro Jugador se ha movido y no está en pantalla");
                     }
                 }
                 else
@@ -340,10 +331,12 @@ public class ClientBehaviour : MonoBehaviour
 
     }
 
-    public void LoadGame(string character, string posicionSpawn)
+    public void LoadGame(string character, string posicionSpawn, string OtroJugador, string posicionOtroJugador)
     {
         PlayerPrefs.SetString("PersonajeSeleccionado", character);
         PlayerPrefs.SetString("PosicionSpawn", posicionSpawn);
+        PlayerPrefs.SetString("OtroJugador", OtroJugador);
+        PlayerPrefs.SetString("posicionOtroJugador", posicionOtroJugador);
 
         SceneManager.LoadScene("Game");
     }

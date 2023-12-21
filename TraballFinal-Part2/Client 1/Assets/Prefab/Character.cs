@@ -81,8 +81,6 @@ public class Character : MonoBehaviour
         {
             TeclaPulsada = "D";
         }
-
-        //Debug.Log(TeclaPulsada);
        
         scriptCliente.EnviarInputServidor(posicionPrevia, TeclaPulsada);
         
@@ -90,10 +88,8 @@ public class Character : MonoBehaviour
 
     public void ActualizarMovimiento(Vector2 nuevaPosicion)
     {
-        //Debug.Log("Posicion actualizada");
         movement = nuevaPosicion;
         //playerRigidBody.velocity = new Vector2(movement.x * movementSpeed, playerRigidBody.velocity.y*jumpForce);
         playerRigidBody.velocity = new Vector2(movement.x * movementSpeed, 0);
-        Debug.Log(transform.position);
     }
 }
