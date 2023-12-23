@@ -34,6 +34,11 @@ public class Character : MonoBehaviour
         GameObject clientServerObject = GameObject.Find("ClientServer");
         scriptCliente = clientServerObject.GetComponent<ClientBehaviour>();
 
+        Vector3 spawnPoint = scriptCliente.posicionSpawn;
+
+        //Debug.Log($"Posicion de spawn del cliente -> {spawnPoint}");
+        //Debug.Log($"Posicion actual del cliente -> {transform.position}");
+
         posicionPrevia = transform.position;
     }
 
@@ -81,16 +86,16 @@ public class Character : MonoBehaviour
         {
             TeclaPulsada = "D";
         }
-       
+
         scriptCliente.EnviarInputServidor(posicionPrevia, TeclaPulsada);
-        
+
     }
 
     public void ActualizarMovimiento(Vector2 nuevaPosicion)
     {
         movement = nuevaPosicion;
         //playerRigidBody.velocity = new Vector2(movement.x * movementSpeed, playerRigidBody.velocity.y*jumpForce);
-        if(playerRigidBody != null)
+        if (playerRigidBody != null)
         {
             playerRigidBody.velocity = new Vector2(movement.x * movementSpeed, 0);
         }

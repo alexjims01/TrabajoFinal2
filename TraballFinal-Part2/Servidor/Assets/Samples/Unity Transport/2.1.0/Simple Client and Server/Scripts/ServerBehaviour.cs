@@ -352,7 +352,7 @@ namespace Unity.Networking.Transport.Samples
             }
             else if (mensajeMovimiento.TeclaPulsada == "W") // Cambia "W" a la cadena correcta que representa la tecla W
             {
-                unidadesDesplazamiento.y += salto;
+                //unidadesDesplazamiento.y += salto;
             }
             else if (mensajeMovimiento.TeclaPulsada == "S") // Cambia "S" a la cadena correcta que representa la tecla S
             {
@@ -422,36 +422,57 @@ namespace Unity.Networking.Transport.Samples
 
         void EnviarPersonajeAceptado(string idUsuario, string mensaje)
         {
-
             MensajePersonajeSeleccionado msg = new MensajePersonajeSeleccionado();
-            //MensajeServidorCliente msg = new MensajeServidorCliente();
-
             msg.CodigoMensaje = 'S';
             msg.NombresCliente = idUsuario;
             msg.Personaje = mensaje;
 
-            Transform Pos = SpawnPointDisponibles[0];
-            msg.Spawn = Pos.position.ToString();
-            SpawnPointDisponibles.Remove(Pos);
+            // Generar una posición de spawn única
+            Vector3 spawnPosition = ObtenerPosicionSpawnUnica();
 
+            // Guardar la posición generada para asegurarse de que no se repita
+            posicionesDeSpawn.Add(spawnPosition);
 
-            // Obtener la conexi�n del cliente utilizando el diccionario
-            if (conexionesPorId.TryGetValue(idUsuario, out var connection))
+            msg.Spawn = spawnPosition.ToString();
+
+            foreach (var conexion in m_Connections)
             {
-                // Enviar el mensaje de error al cliente
-                m_Driver.BeginSend(m_MyPipeline, connection, out var writer);
+                // Enviar el mensaje al cliente
+                m_Driver.BeginSend(m_MyPipeline, conexion, out var writer);
                 writer.WriteByte((byte)msg.CodigoMensaje);
                 writer.WriteFixedString4096(msg.NombresCliente);
                 writer.WriteFixedString4096(msg.Personaje);
                 writer.WriteFixedString4096(msg.Spawn);
 
                 m_Driver.EndSend(writer);
+            }
+        }
 
-            }
-            else
+        // Estructura para almacenar posiciones de spawn únicas
+        private HashSet<Vector3> posicionesDeSpawn = new HashSet<Vector3>();
+
+        // Función para obtener una posición de spawn única
+        Vector3 ObtenerPosicionSpawnUnica()
+        {
+            float minX = -5.0f;
+            float maxX = 5.0f;
+            float minY = 0.78f;
+            float maxY = 0.78f;
+            float minZ = 0.0f;
+            float maxZ = 0.0f;
+
+            Vector3 spawnPosition;
+
+            do
             {
-                Debug.LogError($"No se pudo encontrar la conexi�n para el cliente con ID {idUsuario}");
-            }
+                float x = UnityEngine.Random.Range(minX, maxX);
+                float y = UnityEngine.Random.Range(minY, maxY);
+                float z = UnityEngine.Random.Range(minZ, maxZ);
+
+                spawnPosition = new Vector3(x, y, z);
+            } while (!posicionesDeSpawn.Add(spawnPosition)); // Asegurarse de que la posición sea única
+
+            return spawnPosition;
         }
 
         void ClientesConectados()

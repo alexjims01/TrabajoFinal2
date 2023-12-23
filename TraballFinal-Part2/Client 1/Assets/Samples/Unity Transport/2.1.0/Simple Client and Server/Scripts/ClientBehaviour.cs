@@ -11,6 +11,7 @@ using Codice;
 using UnityEditor;
 using System.IO;
 using UnityEditor.VersionControl;
+using UnityEngine.TextCore.Text;
 
 
 /*
@@ -47,8 +48,13 @@ public class ClientBehaviour : MonoBehaviour
 
     public GameObject[] personajesPrefabs;
 
+    private Dictionary<string, Vector3> spawnPoints = new Dictionary<string, Vector3>();
+
     public static ClientBehaviour Instance { get; private set; }
 
+    Character characterScript;
+    GameObject personaje;
+    public Vector3 posicionSpawn;
 
     struct MensajeServidorCliente
     {
@@ -169,7 +175,7 @@ public class ClientBehaviour : MonoBehaviour
                     string idUsuario = stream.ReadFixedString4096().ToString();
                     string mensaje = stream.ReadFixedString4096().ToString();
 
-                    Debug.Log(mensaje);
+                    //Debug.Log(mensaje);
                 }
                 else if (codigoMensaje == 'P')
                 {
@@ -189,7 +195,17 @@ public class ClientBehaviour : MonoBehaviour
                     personajeSeleccionado = stream.ReadFixedString4096().ToString();
                     string posicionComoCadena = stream.ReadFixedString4096().ToString();
 
-                    LoadGame(personajeSeleccionado, posicionComoCadena);
+                    posicionSpawn = StringToVector3(posicionComoCadena);
+
+                    spawnPoints.Add(personajeSeleccionado, posicionSpawn);
+
+                    Debug.Log($"El cliente {idUsuario} esta listo");
+
+                    if (spawnPoints.Count == 2)
+                    {
+                        LoadGame(personajeSeleccionado, posicionComoCadena);
+                    }
+                    
                 }
                 else if(codigoMensaje == 'X')
                 {
@@ -204,18 +220,18 @@ public class ClientBehaviour : MonoBehaviour
                     float posNewX = stream.ReadFloat();
                     float posNewY = stream.ReadFloat();
 
-                    GameObject personaje = GameObject.Find(nombrePersonaje + "(Clone)");
+                    personaje = GameObject.Find(nombrePersonaje + "(Clone)");
 
                     if (personaje != null)
                     {
                         // Acceder al componente Character asociado al GameObject
-                        Character characterScript = personaje.GetComponent<Character>();
+                        characterScript = personaje.GetComponent<Character>();
 
                         // Verificar si se encontró el componente Character
                         if (characterScript != null)
                         {
                             // Ahora puedes acceder a las variables o métodos del script Character
-                            // Ejemplo:
+                            
                             characterScript.ActualizarMovimiento(new Vector2(posNewX, posNewY));
                         }
                     }
@@ -223,8 +239,8 @@ public class ClientBehaviour : MonoBehaviour
                     {
                         //El juego aun no ha instanciado ese personaje
                         GameObject prefab = FindPersonajePrefab(nombrePersonaje);
-                        Instantiate(prefab, new Vector2(posNewX, posNewY), Quaternion.identity);
-                    }
+                        Instantiate(prefab, spawnPoints[nombrePersonaje], Quaternion.identity);
+                    }          
                 }
                 else
                 {
@@ -294,13 +310,31 @@ public class ClientBehaviour : MonoBehaviour
 
     }
 
-    public void LoadGame(string character, string posicionSpawn)
+    public void LoadGame(string character, string _posicionSpawn)
     {
         PlayerPrefs.SetString("PersonajeSeleccionado", character);
-        PlayerPrefs.SetString("PosicionSpawn", posicionSpawn);
+        PlayerPrefs.SetString("PosicionSpawn", _posicionSpawn);
 
         SceneManager.LoadScene("Game");
+
     }
+
+    // Función para convertir una cadena de posición a un Vector3
+    private Vector3 StringToVector3(string posicionSpawn)
+    {
+        // La cadena tiene el formato "(x, y, z)"
+        // Elimina los paréntesis y divide la cadena en componentes separados por comas
+        string[] components = posicionSpawn.Trim('(', ')').Split(',');
+
+        // Convierte cada componente a un float
+        float x = float.Parse(components[0]);
+        float y = float.Parse(components[1]);
+        float z = float.Parse(components[2]);
+
+        // Retorna el Vector3 creado a partir de los componentes
+        return new Vector3(x, y, z);
+    }
+
 
     private void CallCharacterSelected(string selectedCharacterName)
     {

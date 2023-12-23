@@ -34,6 +34,11 @@ public class Character : MonoBehaviour
         GameObject clientServerObject = GameObject.Find("ClientServer");
         scriptCliente = clientServerObject.GetComponent<ClientBehaviour>();
 
+        Vector3 spawnPoint = scriptCliente.posicionSpawn;
+
+        //Debug.Log($"Posicion de spawn del cliente -> {spawnPoint}");
+        //Debug.Log($"Posicion actual del cliente -> {transform.position}");
+
         posicionPrevia = transform.position;
     }
 
