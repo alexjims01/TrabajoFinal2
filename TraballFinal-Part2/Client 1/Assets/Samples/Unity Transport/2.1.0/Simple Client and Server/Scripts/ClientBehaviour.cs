@@ -44,7 +44,7 @@ public class ClientBehaviour : MonoBehaviour
 
     private FixedString4096Bytes IdCliente;
 
-    string personajeSeleccionado = "";
+    public string personajeSeleccionado = "";
 
     public GameObject[] personajesPrefabs;
 
@@ -53,7 +53,7 @@ public class ClientBehaviour : MonoBehaviour
     public static ClientBehaviour Instance { get; private set; }
 
     Character characterScript;
-    GameObject personaje;
+    public GameObject personaje;
     public Vector3 posicionSpawn;
 
     struct MensajeServidorCliente

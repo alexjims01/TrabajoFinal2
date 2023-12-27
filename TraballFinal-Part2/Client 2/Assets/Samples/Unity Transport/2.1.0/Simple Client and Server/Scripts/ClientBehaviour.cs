@@ -44,7 +44,7 @@ public class ClientBehaviour : MonoBehaviour
 
     private FixedString4096Bytes IdCliente;
 
-    string personajeSeleccionado = "";
+    public string personajeSeleccionado = "";
 
     public GameObject[] personajesPrefabs;
 
@@ -53,7 +53,7 @@ public class ClientBehaviour : MonoBehaviour
     public static ClientBehaviour Instance { get; private set; }
 
     Character characterScript;
-    GameObject personaje;
+    public GameObject personaje;
     public Vector3 posicionSpawn;
 
     struct MensajeServidorCliente
@@ -113,7 +113,7 @@ public class ClientBehaviour : MonoBehaviour
         // Crear el pipeline con Fragmentation y ReliableSequenced
         m_MyPipeline = m_Driver.CreatePipeline(typeof(FragmentationPipelineStage), typeof(ReliableSequencedPipelineStage));
 
-        if (IPField != null && PortField != null && boton != null)
+        if(IPField != null && PortField != null && boton != null)
         {
             IPField.onValueChanged.AddListener(ActualizarDireccionIP);
             PortField.onValueChanged.AddListener(ActualizarPuerto);
@@ -146,7 +146,7 @@ public class ClientBehaviour : MonoBehaviour
 
     void Update()
     {
-
+        
         m_Driver.ScheduleUpdate().Complete();
 
         if (!m_Connection.IsCreated)
@@ -205,9 +205,9 @@ public class ClientBehaviour : MonoBehaviour
                     {
                         LoadGame(personajeSeleccionado, posicionComoCadena);
                     }
-
+                    
                 }
-                else if (codigoMensaje == 'X')
+                else if(codigoMensaje == 'X')
                 {
                     string mensaje = stream.ReadFixedString4096().ToString();
 
@@ -231,16 +231,16 @@ public class ClientBehaviour : MonoBehaviour
                         if (characterScript != null)
                         {
                             // Ahora puedes acceder a las variables o métodos del script Character
-
+                            
                             characterScript.ActualizarMovimiento(new Vector2(posNewX, posNewY));
                         }
                     }
-                    else if (personajeSeleccionado != "")
+                    else if(personajeSeleccionado != "")
                     {
                         //El juego aun no ha instanciado ese personaje
                         GameObject prefab = FindPersonajePrefab(nombrePersonaje);
                         Instantiate(prefab, spawnPoints[nombrePersonaje], Quaternion.identity);
-                    }
+                    }          
                 }
                 else
                 {
@@ -253,7 +253,7 @@ public class ClientBehaviour : MonoBehaviour
 
                     IdCliente = mensaje.NombresCliente;
                 }
-
+                
             }
             else if (cmd == NetworkEvent.Type.Disconnect)
             {
@@ -304,7 +304,7 @@ public class ClientBehaviour : MonoBehaviour
     {
         // Puedes especificar el nombre de la nueva escena que deseas cargar
         string nuevaEscena = "CharacterSelection";
-
+        
         // Cargar la nueva escena
         SceneManager.LoadScene(nuevaEscena);
 

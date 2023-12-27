@@ -1,32 +1,30 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 
 public class Character : MonoBehaviour
 {
-
     private Rigidbody2D playerRigidBody;
-
     private Animator anim;
-
-    public Vector2 movement;
-
-    public Vector2 posicionPrevia;
-
     private SpriteRenderer spritePersonaje;
 
+    public Vector2 movement;
+    public Vector2 posicionPrevia;
     public string TeclaPulsada;
-
     public static ClientBehaviour scriptCliente;
 
     float movementSpeed = 5f;
     float jumpForce = 5f;
 
+    private GameObject mainCamera;
+    private Camera cameraComponent;
+
+    GameObject personaje;
 
     // Start is called before the first frame update
     void Start()
     {
+        personaje = gameObject;
         anim = GetComponentInChildren<Animator>();
         playerRigidBody = GetComponent<Rigidbody2D>();
         spritePersonaje = GetComponentInChildren<SpriteRenderer>();
@@ -36,8 +34,6 @@ public class Character : MonoBehaviour
 
         Vector3 spawnPoint = scriptCliente.posicionSpawn;
 
-        //Debug.Log($"Posicion de spawn del cliente -> {spawnPoint}");
-        //Debug.Log($"Posicion actual del cliente -> {transform.position}");
 
         posicionPrevia = transform.position;
     }
@@ -45,12 +41,9 @@ public class Character : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
         InputUsuario();
 
         posicionPrevia = transform.position;
-
-        //Debug.Log(transform.position);
 
         if (movement.x > 0)
         {
@@ -62,12 +55,10 @@ public class Character : MonoBehaviour
             anim.SetTrigger("Run");
             spritePersonaje.flipX = true;
         }
-
     }
 
     public void InputUsuario()
     {
-
         TeclaPulsada = "";
 
         if (Input.GetKey(KeyCode.A))
@@ -88,13 +79,11 @@ public class Character : MonoBehaviour
         }
 
         scriptCliente.EnviarInputServidor(posicionPrevia, TeclaPulsada);
-
     }
 
     public void ActualizarMovimiento(Vector2 nuevaPosicion)
     {
         movement = nuevaPosicion;
-        //playerRigidBody.velocity = new Vector2(movement.x * movementSpeed, playerRigidBody.velocity.y*jumpForce);
         if (playerRigidBody != null)
         {
             playerRigidBody.velocity = new Vector2(movement.x * movementSpeed, 0);
