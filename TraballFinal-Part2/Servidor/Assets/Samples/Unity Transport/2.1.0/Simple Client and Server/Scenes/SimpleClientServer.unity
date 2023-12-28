@@ -1093,6 +1093,7 @@ MonoBehaviour:
   ListaClientesConectados: {fileID: 561399818}
   SpawnPoint_1: {fileID: 1415318178}
   SpawnPoint_2: {fileID: 1116654611}
+  enemy: {fileID: 3062064800668000954, guid: 3a42bcd252844a140b1ae11a38afc25c, type: 3}
 --- !u!1 &1991280199
 GameObject:
   m_ObjectHideFlags: 0

@@ -10,13 +10,14 @@ using System;
 /*
 // CLAVES MENSAJES //
     E -> Error
-    H
-    X
+    H -> Conexión realizada
+    X -> Petición de conexión
     C -> Seleccion de personaje
     S -> Personaje aceptado + Posicion Spawn
     P -> Lista Personajes Disponibles
     X -> Posicion Jugadores
     M -> Movimiento/Accion del jugador
+    W -> Spawn Enemigo
 */
 
 
@@ -53,6 +54,13 @@ namespace Unity.Networking.Transport.Samples
         private List<Transform> SpawnPointOcupados = new List<Transform>();
 
 
+        private bool partidaEmpezada = false;
+        private bool temporizadorInicido = false;
+        private float tiempoCargaEscena;
+        private float tiempoEsperaEnemigo = 2.0f;
+        private bool enemigoSpawned = false;
+        public GameObject enemy;
+
         struct MensajeServidorCliente
         {
             public char CodigoMensaje;
@@ -67,8 +75,6 @@ namespace Unity.Networking.Transport.Samples
             public FixedString4096Bytes NombresCliente;
             public FixedString4096Bytes Personaje;
             public FixedString4096Bytes Spawn;
-            //public FixedString4096Bytes PersonajesJugadores;
-            //public FixedString4096Bytes PosicionJugadores;
         }
         struct MensajeMovimientoClienteServidor
         {
@@ -84,6 +90,13 @@ namespace Unity.Networking.Transport.Samples
             public FixedString4096Bytes nombrePersonaje;
             public float PosNewX;
             public float PosNewY;
+        }
+
+        struct MensajeSpawnEnemigo
+        {
+            public char CodigoMensaje;
+            public FixedString4096Bytes Personaje;
+            public FixedString4096Bytes Spawn;
         }
 
         void Start()
@@ -114,7 +127,7 @@ namespace Unity.Networking.Transport.Samples
             Debug.Log($"Server IP: {serverIP}");
 
             textoMeshPro.text = serverIP;
-
+            
         }
 
         string GetLocalIPAddress()
@@ -285,6 +298,10 @@ namespace Unity.Networking.Transport.Samples
 
                         else if (codigoMensaje == 'M')
                         {
+                            if(!partidaEmpezada)
+                            {
+                                partidaEmpezada = true;
+                            }
                             MensajeMovimientoClienteServidor mensajeMovimiento = new MensajeMovimientoClienteServidor();
 
                             mensajeMovimiento.codigoMensaje = codigoMensaje;
@@ -333,7 +350,53 @@ namespace Unity.Networking.Transport.Samples
                     }
                 }
             }
+            if(partidaEmpezada && !temporizadorInicido)
+            {
+                temporizadorInicido = true;
+                tiempoCargaEscena = Time.time;
+            }
+            if (temporizadorInicido && !enemigoSpawned && Time.time - tiempoCargaEscena > tiempoEsperaEnemigo)
+            {
+                // Lógica para spawnear un enemigo
+                SpawnearEnemigo();
+                enemigoSpawned = true;
+            }
         }
+
+
+/*
+        struct MensajePersonajeSeleccionado
+        {
+            public char CodigoMensaje;
+            public FixedString4096Bytes NombresCliente;
+            public FixedString4096Bytes Personaje;
+            public FixedString4096Bytes Spawn;
+        }
+*/
+        void SpawnearEnemigo()
+        {
+            MensajeSpawnEnemigo msg = new MensajeSpawnEnemigo();
+            msg.CodigoMensaje = 'W';
+            msg.Personaje = "Skeleton";
+
+            Vector3 spawnPosition = ObtenerPosicionSpawnUnica();
+            
+
+            msg.Spawn = spawnPosition.ToString();
+
+            foreach (var conexion in m_Connections)
+            {
+                // Enviar el mensaje al cliente
+                m_Driver.BeginSend(m_MyPipeline, conexion, out var writer);
+                writer.WriteByte((byte)msg.CodigoMensaje);
+                writer.WriteFixedString4096(msg.Personaje);
+                writer.WriteFixedString4096(msg.Spawn);
+
+                m_Driver.EndSend(writer);
+            }
+            Instantiate(enemy, spawnPosition, Quaternion.identity);
+        }
+
 
         void CalcularNuevaPosicionCliente(MensajeMovimientoClienteServidor mensajeMovimiento, NetworkConnection connection)
         {

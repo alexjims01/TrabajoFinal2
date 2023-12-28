@@ -2029,6 +2029,7 @@ MonoBehaviour:
   personajesPrefabs:
   - {fileID: 4397762248140579449, guid: a1c65215905b9fa4aa7c2e14120fb0e8, type: 3}
   - {fileID: 3792471005204489004, guid: 68453d5efc87386429f3e8a28b5b628f, type: 3}
+  - {fileID: 3062064800668000954, guid: a6869863b8c898746bd7c6f5f4dd1eb9, type: 3}
   personaje: {fileID: 0}
   posicionSpawn: {x: 0, y: 0, z: 0}
 --- !u!1 &1961735559

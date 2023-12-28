@@ -12,18 +12,19 @@ using UnityEditor;
 using System.IO;
 using UnityEditor.VersionControl;
 using UnityEngine.TextCore.Text;
-
+using System.Globalization;
 
 /*
 // CLAVES MENSAJES //
     E -> Error
-    H
-    X
+    H -> Conexión realizada
+    X -> Petición de conexión
     C -> Seleccion de personaje
     S -> Personaje aceptado + Posicion Spawn
     P -> Lista Personajes Disponibles
     X -> Posicion Jugadores
     M -> Movimiento/Accion del jugador
+    W -> Spawn Enemigo
 */
 
 public class ClientBehaviour : MonoBehaviour
@@ -46,9 +47,11 @@ public class ClientBehaviour : MonoBehaviour
 
     public string personajeSeleccionado = "";
 
+    string posicionComoCadena = "";
+
     public GameObject[] personajesPrefabs;
 
-    private Dictionary<string, Vector3> spawnPoints = new Dictionary<string, Vector3>();
+    private Dictionary<string, string> spawnPoints = new Dictionary<string, string>();
 
     public static ClientBehaviour Instance { get; private set; }
 
@@ -192,12 +195,18 @@ public class ClientBehaviour : MonoBehaviour
                 else if (codigoMensaje == 'S')
                 {
                     string idUsuario = stream.ReadFixedString4096().ToString();
-                    personajeSeleccionado = stream.ReadFixedString4096().ToString();
-                    string posicionComoCadena = stream.ReadFixedString4096().ToString();
+                    string personaje = stream.ReadFixedString4096().ToString();
+                    string pos = stream.ReadFixedString4096().ToString();  
 
-                    posicionSpawn = StringToVector3(posicionComoCadena);
+                    if(IdCliente == idUsuario)
+                    {
+                        personajeSeleccionado = personaje;
+                        posicionComoCadena = pos;
+                    }
 
-                    spawnPoints.Add(personajeSeleccionado, posicionSpawn);
+                    //posicionSpawn = StringToVector3(pos);
+
+                    spawnPoints.Add(personaje, pos);
 
                     Debug.Log($"El cliente {idUsuario} esta listo");
 
@@ -212,6 +221,13 @@ public class ClientBehaviour : MonoBehaviour
                     string mensaje = stream.ReadFixedString4096().ToString();
 
                     personajeSeleccionado = mensaje;
+                }
+                else if(codigoMensaje == 'W')
+                {
+                    string nombrePersonaje = stream.ReadFixedString4096().ToString();
+                    string pos = stream.ReadFixedString4096().ToString();
+                    GameObject prefab = FindPersonajePrefab(nombrePersonaje);
+                    Instantiate(prefab, ConvertirStringPos(pos), Quaternion.identity);
                 }
                 else if (codigoMensaje == 'M')
                 {
@@ -239,7 +255,9 @@ public class ClientBehaviour : MonoBehaviour
                     {
                         //El juego aun no ha instanciado ese personaje
                         GameObject prefab = FindPersonajePrefab(nombrePersonaje);
-                        Instantiate(prefab, spawnPoints[nombrePersonaje], Quaternion.identity);
+                        Vector3 spawnPoint = Vector3.zero;
+                        string posAux = spawnPoints[nombrePersonaje];
+                        Instantiate(prefab, ConvertirStringPos(posAux), Quaternion.identity);
                     }          
                 }
                 else
@@ -261,6 +279,23 @@ public class ClientBehaviour : MonoBehaviour
                 m_Connection = default;
             }
         }
+    }
+
+    Vector3 ConvertirStringPos(string posAux)
+    {
+        // Dividir la cadena en componentes (x, y, z) utilizando un carácter delimitador (por ejemplo, ',')
+        string[] componentes = posAux.Replace("(", "").Replace(")", "").Split(',');
+        Vector3 spawnPoint = Vector3.zero;
+
+        if (componentes.Length >= 3)
+        {
+            // Intentar convertir las cadenas a valores de punto flotante
+            float x = float.Parse(componentes[0], CultureInfo.InvariantCulture);
+            float y = float.Parse(componentes[1], CultureInfo.InvariantCulture);
+            float z = float.Parse(componentes[2], CultureInfo.InvariantCulture);
+            spawnPoint = new Vector3(x, y, z);
+        }
+        return spawnPoint;
     }
 
     void ConnectToServer()
