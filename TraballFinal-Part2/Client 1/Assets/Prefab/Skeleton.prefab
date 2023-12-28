@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8162707608857058827}
   - component: {fileID: 5852900185750021557}
-  - component: {fileID: 3872738816618229424}
+  - component: {fileID: 3618876258868911237}
   m_Layer: 0
   m_Name: Animador
   m_TagString: Untagged
@@ -85,7 +85,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!95 &3872738816618229424
+--- !u!95 &3618876258868911237
 Animator:
   serializedVersion: 5
   m_ObjectHideFlags: 0
@@ -95,7 +95,7 @@ Animator:
   m_GameObject: {fileID: 737412423011596866}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 77c2e5896f0f18c40b427e615a6d9ed7, type: 2}
+  m_Controller: {fileID: 9100000, guid: 0c0a78aba2a4f3f43b12dc069d7a9723, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -117,7 +117,7 @@ GameObject:
   - component: {fileID: 3124301240116348601}
   - component: {fileID: 2290186703877407600}
   - component: {fileID: 1644903020227152729}
-  - component: {fileID: 3899407430726424110}
+  - component: {fileID: 5905491608584935626}
   m_Layer: 0
   m_Name: Skeleton
   m_TagString: Untagged
@@ -213,24 +213,15 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.24423218, y: 0.5276375}
   m_EdgeRadius: 0
---- !u!95 &3899407430726424110
-Animator:
-  serializedVersion: 5
+--- !u!114 &5905491608584935626
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3062064800668000954}
   m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: f2a3a0dcdf5d04f4a8a80cec1efc9e31, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f88050d461cfe44a8f9da4a68bbfefd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

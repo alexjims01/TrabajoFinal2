@@ -25,6 +25,7 @@ using System.Globalization;
     X -> Posicion Jugadores
     M -> Movimiento/Accion del jugador
     W -> Spawn Enemigo
+    Z -> Movimiento Enemigo
 */
 
 public class ClientBehaviour : MonoBehaviour
@@ -92,6 +93,14 @@ public class ClientBehaviour : MonoBehaviour
     {
         public char codigoMensaje;
         public FixedString4096Bytes nombrePersonaje;
+        public float PosNewX;
+        public float PosNewY;
+    }
+
+    struct MensajeMovimientoEnemigoServidorCliente
+    {
+        public char codigoMensaje;
+        public FixedString4096Bytes Personaje;
         public float PosNewX;
         public float PosNewY;
     }
@@ -260,6 +269,15 @@ public class ClientBehaviour : MonoBehaviour
                         Instantiate(prefab, ConvertirStringPos(posAux), Quaternion.identity);
                     }          
                 }
+                else if (codigoMensaje == 'Z')
+                {
+                    // Procesar el mensaje de movimiento
+                    string nombreEnemigo = stream.ReadFixedString4096().ToString();
+                    float posNewX = stream.ReadFloat();
+                    float posNewY = stream.ReadFloat();
+                    
+                    procesarMovimientoEnemigo(nombreEnemigo, posNewX, posNewY);
+                }
                 else
                 {
                     MensajeServidorCliente mensaje = new MensajeServidorCliente();
@@ -279,6 +297,14 @@ public class ClientBehaviour : MonoBehaviour
                 m_Connection = default;
             }
         }
+    }
+
+    private void procesarMovimientoEnemigo(string nombreEnemigo, float posNewX, float posNewY)
+    {
+        GameObject Enemigo = GameObject.Find(nombreEnemigo + "(Clone)");
+
+        Vector2 posicionEnemigo = new Vector2(posNewX, posNewY);
+        Enemigo.transform.position = posicionEnemigo;
     }
 
     Vector3 ConvertirStringPos(string posAux)

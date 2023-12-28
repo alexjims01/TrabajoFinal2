@@ -229,7 +229,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targets: []
-  offset: {x: 0, y: 0.6, z: -2}
+  minZoom: 2
+  maxZoom: 5
+  zoomLerpSpeed: 5
   smoothTime: 0.5
 --- !u!1 &626771787
 GameObject:

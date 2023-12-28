@@ -38,5 +38,6 @@ public class Enemy : MonoBehaviour
         {
             direccion = 1; // Cambia la dirección a derecha
         }
+        posicion = transform.position;
     }
 }

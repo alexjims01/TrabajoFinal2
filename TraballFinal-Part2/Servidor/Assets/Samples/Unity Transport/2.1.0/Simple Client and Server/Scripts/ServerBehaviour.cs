@@ -2,7 +2,6 @@ using UnityEngine;
 using Unity.Collections;
 using Unity.Networking.Transport;
 using System.Collections.Generic;
-using Codice.Client.Common.Encryption;
 using TMPro;
 using UnityEngine.SceneManagement;
 using System;
@@ -61,6 +60,9 @@ namespace Unity.Networking.Transport.Samples
         private bool enemigoSpawned = false;
         public GameObject enemy;
 
+
+        public static Enemy scriptEnemigo;
+
         struct MensajeServidorCliente
         {
             public char CodigoMensaje;
@@ -97,6 +99,14 @@ namespace Unity.Networking.Transport.Samples
             public char CodigoMensaje;
             public FixedString4096Bytes Personaje;
             public FixedString4096Bytes Spawn;
+        }
+
+        struct MensajeMovimientoEnemigo
+        {
+            public char CodigoMensaje;
+            public FixedString4096Bytes Personaje;
+            public float PosX;
+            public float PosY;
         }
 
         void Start()
@@ -311,7 +321,6 @@ namespace Unity.Networking.Transport.Samples
 
                             CalcularNuevaPosicionCliente(mensajeMovimiento, m_Connections[i]);
                         }
-
                     }
                     else if (cmd == NetworkEvent.Type.Disconnect)
                     {
@@ -361,8 +370,36 @@ namespace Unity.Networking.Transport.Samples
                 SpawnearEnemigo();
                 enemigoSpawned = true;
             }
+            if (enemigoSpawned)
+            {
+                EnviarMensajeMovimientoEnemigo();
+            }
         }
 
+        void EnviarMensajeMovimientoEnemigo()
+        {
+            MensajeMovimientoEnemigo msgMovimientoEnemigo = new MensajeMovimientoEnemigo();
+            msgMovimientoEnemigo.CodigoMensaje = 'Z';
+            msgMovimientoEnemigo.Personaje = "Skeleton";
+
+            GameObject Enemigo = GameObject.Find(msgMovimientoEnemigo.Personaje + "(Clone)");
+
+            msgMovimientoEnemigo.PosX = Enemigo.transform.position.x;
+            msgMovimientoEnemigo.PosY = Enemigo.transform.position.y;
+
+            foreach (var conexion in m_Connections)
+            {
+                // Enviar el mensaje al cliente
+                m_Driver.BeginSend(m_MyPipeline, conexion, out var writer);
+                writer.WriteByte((byte)msgMovimientoEnemigo.CodigoMensaje);
+                writer.WriteFixedString4096(msgMovimientoEnemigo.Personaje);
+                writer.WriteFloat(msgMovimientoEnemigo.PosX);
+                writer.WriteFloat(msgMovimientoEnemigo.PosY);
+
+                m_Driver.EndSend(writer);
+            }
+
+        }
 
 /*
         struct MensajePersonajeSeleccionado
@@ -396,6 +433,7 @@ namespace Unity.Networking.Transport.Samples
             }
             Instantiate(enemy, spawnPosition, Quaternion.identity);
         }
+
 
 
         void CalcularNuevaPosicionCliente(MensajeMovimientoClienteServidor mensajeMovimiento, NetworkConnection connection)
@@ -588,6 +626,8 @@ namespace Unity.Networking.Transport.Samples
                 m_Driver.EndSend(writer);
             }
         }
+
+
         
     }
 }
