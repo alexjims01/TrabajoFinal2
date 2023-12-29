@@ -12,6 +12,7 @@ public class Character : MonoBehaviour
     public Vector2 posicionPrevia;
     public string TeclaPulsada;
     public static ClientBehaviour scriptCliente;
+    public static GameManager scriptGameManager;
 
     float movementSpeed = 5f;
     float jumpForce = 5f;
@@ -31,6 +32,9 @@ public class Character : MonoBehaviour
 
         GameObject clientServerObject = GameObject.Find("ClientServer");
         scriptCliente = clientServerObject.GetComponent<ClientBehaviour>();
+
+        GameObject gameManagerObject = GameObject.Find("GameManager");
+        scriptGameManager = gameManagerObject.GetComponent<GameManager>();
 
         Vector3 spawnPoint = scriptCliente.posicionSpawn;
 
@@ -87,6 +91,17 @@ public class Character : MonoBehaviour
         if (playerRigidBody != null)
         {
             playerRigidBody.velocity = new Vector2(movement.x * movementSpeed, 0);
+        }
+    }
+
+    void OnCollisionEnter2D(Collision2D other)
+    {
+        // Este método se llama cuando el collider de este objeto toca otro collider
+        // Comprueba si el objeto con el que colisionó tiene un tag específico, por ejemplo, "Obstaculo"
+        if (other.gameObject.CompareTag("Enemigo"))
+        {
+            scriptGameManager.MostrarMensajeGameOver();
+            scriptCliente.EnviarMuertePersonaje();
         }
     }
 }

@@ -26,6 +26,7 @@ using System.Globalization;
     M -> Movimiento/Accion del jugador
     W -> Spawn Enemigo
     Z -> Movimiento Enemigo
+    K -> Colision Jugador-Enemigo
 */
 
 public class ClientBehaviour : MonoBehaviour
@@ -103,6 +104,11 @@ public class ClientBehaviour : MonoBehaviour
         public FixedString4096Bytes Personaje;
         public float PosNewX;
         public float PosNewY;
+    }
+
+    struct MensajePersonajeColisionServidorCliente
+    {
+        public char codigoMensaje;
     }
 
     private void Awake()
@@ -304,7 +310,11 @@ public class ClientBehaviour : MonoBehaviour
         GameObject Enemigo = GameObject.Find(nombreEnemigo + "(Clone)");
 
         Vector2 posicionEnemigo = new Vector2(posNewX, posNewY);
-        Enemigo.transform.position = posicionEnemigo;
+        if(Enemigo != null)
+        {
+            Enemigo.transform.position = posicionEnemigo;
+        }
+        
     }
 
     Vector3 ConvertirStringPos(string posAux)
@@ -454,6 +464,30 @@ public class ClientBehaviour : MonoBehaviour
 
         }
 
+    }
+
+    public void EnviarMuertePersonaje()
+    {
+        MensajePersonajeColisionServidorCliente msg = new MensajePersonajeColisionServidorCliente();
+
+        msg.codigoMensaje = 'K';
+        if (m_Connection.IsCreated)
+        {
+            // Crear un escritor para el mensaje
+            var writer = m_Driver.BeginSend(m_MyPipeline, m_Connection, out var tempWriter);
+
+            // Escribir los datos del mensaje en el escritor
+            tempWriter.WriteByte((byte)msg.codigoMensaje);
+
+            // Finalizar el env�o
+            m_Driver.EndSend(tempWriter);
+
+        }
+        GameObject eliminarEnemigo = GameObject.Find("Skeleton(Clone)");
+        if (eliminarEnemigo != null)
+        {
+            Destroy(eliminarEnemigo);
+        }
     }
 
     // Busca el prefab del personaje por nombre

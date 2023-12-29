@@ -6,9 +6,11 @@ using System.Globalization;
 public class GameManager : MonoBehaviour
 {
     public GameObject[] personajesPrefabs;
+    public Canvas letreroGameOver;
 
     void Start()
     {
+        letreroGameOver.enabled = false;
         string personajeSeleccionado = PlayerPrefs.GetString("PersonajeSeleccionado");
         string posicionSpawnString = PlayerPrefs.GetString("PosicionSpawn");
 
@@ -49,6 +51,14 @@ public class GameManager : MonoBehaviour
             }
         }
         return null;
+    }
+
+    public void MostrarMensajeGameOver()
+    {
+        if (letreroGameOver != null)
+        {
+            letreroGameOver.enabled = true;
+        }
     }
 }
 

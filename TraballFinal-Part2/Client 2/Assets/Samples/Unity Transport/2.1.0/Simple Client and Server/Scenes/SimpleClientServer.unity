@@ -2032,6 +2032,7 @@ MonoBehaviour:
   - {fileID: 3062064800668000954, guid: a6869863b8c898746bd7c6f5f4dd1eb9, type: 3}
   personaje: {fileID: 0}
   posicionSpawn: {x: 0, y: 0, z: 0}
+  letreroGameOver: {fileID: 711732540207245031, guid: bca6325c94527524fbb25f4b84fb5ca2, type: 3}
 --- !u!1 &1961735559
 GameObject:
   m_ObjectHideFlags: 0

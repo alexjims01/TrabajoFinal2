@@ -54,11 +54,12 @@ namespace Unity.Networking.Transport.Samples
 
 
         private bool partidaEmpezada = false;
-        private bool temporizadorInicido = false;
+        private bool temporizadorIniciado = false;
         private float tiempoCargaEscena;
         private float tiempoEsperaEnemigo = 2.0f;
         private bool enemigoSpawned = false;
         public GameObject enemy;
+        private bool enemigoVivo = true;
 
 
         public static Enemy scriptEnemigo;
@@ -321,6 +322,19 @@ namespace Unity.Networking.Transport.Samples
 
                             CalcularNuevaPosicionCliente(mensajeMovimiento, m_Connections[i]);
                         }
+
+                        else if (codigoMensaje == 'K')
+                        {
+                            GameObject eliminarEnemigo = GameObject.Find("Skeleton(Clone)");
+                            if (eliminarEnemigo != null)
+                            {
+                                Destroy(eliminarEnemigo);
+                            }
+                            //personajesPorCliente.Clear();
+                            temporizadorIniciado = false;
+                            enemigoSpawned = false;
+                            enemigoVivo = false;
+                        }
                     }
                     else if (cmd == NetworkEvent.Type.Disconnect)
                     {
@@ -359,18 +373,18 @@ namespace Unity.Networking.Transport.Samples
                     }
                 }
             }
-            if(partidaEmpezada && !temporizadorInicido)
+            if(partidaEmpezada && !temporizadorIniciado)
             {
-                temporizadorInicido = true;
+                temporizadorIniciado = true;
                 tiempoCargaEscena = Time.time;
             }
-            if (temporizadorInicido && !enemigoSpawned && Time.time - tiempoCargaEscena > tiempoEsperaEnemigo)
+            if (temporizadorIniciado && !enemigoSpawned && Time.time - tiempoCargaEscena > tiempoEsperaEnemigo && enemigoVivo)
             {
                 // Lógica para spawnear un enemigo
                 SpawnearEnemigo();
                 enemigoSpawned = true;
             }
-            if (enemigoSpawned)
+            if (enemigoSpawned && enemigoVivo)
             {
                 EnviarMensajeMovimientoEnemigo();
             }
@@ -401,15 +415,6 @@ namespace Unity.Networking.Transport.Samples
 
         }
 
-/*
-        struct MensajePersonajeSeleccionado
-        {
-            public char CodigoMensaje;
-            public FixedString4096Bytes NombresCliente;
-            public FixedString4096Bytes Personaje;
-            public FixedString4096Bytes Spawn;
-        }
-*/
         void SpawnearEnemigo()
         {
             MensajeSpawnEnemigo msg = new MensajeSpawnEnemigo();
